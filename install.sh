@@ -69,10 +69,11 @@ install() {
         exit 1
     fi
 
-    # For Windows, use current directory
+    # Set install dir
     if [ "$OS" = "windows" ]; then
-        INSTALL_DIR="."
-        echo -e "${YELLOW}Windows detected: Installing to current directory${NC}"
+        INSTALL_DIR="$HOME/bin"
+        echo -e "${CYAN}Windows (Git Bash) detected: Installing to $INSTALL_DIR${NC}"
+        mkdir -p "$INSTALL_DIR"
     else
         check_sudo
     fi
@@ -119,46 +120,56 @@ install() {
     chmod +x "$CLI_OUT"
 
     echo ""
-    echo -e "${GREEN}✓ Installation complete!${NC}"
-    echo ""
-    echo -e "${CYAN}Installed binaries:${NC}"
+    echo -e "${GREEN}✓ Binaries installed:${NC}"
     echo -e "  Server: $SERVER_OUT"
     echo -e "  CLI:    $CLI_OUT"
-    echo ""
 
     if [ "$OS" = "windows" ]; then
-        # Add install dir to PATH in ~/.bashrc if not already there
-        INSTALL_DIR_ABS="$(cd "$INSTALL_DIR" && pwd)"
-        BASHRC="$HOME/.bashrc"
-        if ! grep -qF "$INSTALL_DIR_ABS" "$BASHRC" 2>/dev/null; then
-            echo "" >> "$BASHRC"
-            echo "# dnt-vault" >> "$BASHRC"
-            echo "export PATH=\"\$PATH:$INSTALL_DIR_ABS\"" >> "$BASHRC"
-            echo -e "${GREEN}✓ Added to PATH in $BASHRC${NC}"
-            echo -e "${YELLOW}  Run: source ~/.bashrc  (or restart terminal)${NC}"
-        else
-            echo -e "${GREEN}✓ PATH already configured in $BASHRC${NC}"
-        fi
-    else
-        echo -e "${CYAN}Usage:${NC}"
-        echo -e "  dnt-vault-server    # Start server"
-        echo -e "  dnt-vault init      # Initialize client"
+        setup_path_windows
     fi
 
     echo ""
     echo -e "${CYAN}Quick start:${NC}"
-    echo -e "  1. Start server: dnt-vault-server"
-    echo -e "  2. Init client:  dnt-vault init"
-    echo -e "  3. Login:        dnt-vault login"
-    echo -e "  4. Push config:  dnt-vault push"
+    echo -e "  1. dnt-vault-server   # Start server"
+    echo -e "  2. dnt-vault init     # Initialize client"
+    echo -e "  3. dnt-vault login    # Login"
+    echo -e "  4. dnt-vault push     # Push SSH config"
     echo ""
     echo -e "${CYAN}Documentation: https://github.com/$REPO${NC}"
+}
+
+# Add ~/bin to PATH in ~/.bashrc and source it
+setup_path_windows() {
+    local BASHRC="$HOME/.bashrc"
+    local BIN_DIR="$HOME/bin"
+
+    # Add to .bashrc if not already there
+    if ! grep -qF 'PATH="$HOME/bin' "$BASHRC" 2>/dev/null && ! grep -qF "PATH=\$HOME/bin" "$BASHRC" 2>/dev/null; then
+        echo "" >> "$BASHRC"
+        echo "# dnt-vault" >> "$BASHRC"
+        echo 'export PATH="$HOME/bin:$PATH"' >> "$BASHRC"
+        echo -e "${GREEN}✓ Added ~/bin to PATH in $BASHRC${NC}"
+    else
+        echo -e "${GREEN}✓ ~/bin already in PATH ($BASHRC)${NC}"
+    fi
+
+    # Source .bashrc to apply in current session
+    # shellcheck disable=SC1090
+    source "$BASHRC" 2>/dev/null || true
+    export PATH="$BIN_DIR:$PATH"
+
+    echo -e "${GREEN}✓ PATH updated — dnt-vault is ready to use${NC}"
 }
 
 # Uninstall
 uninstall() {
     echo -e "${YELLOW}Uninstalling DNT-Vault...${NC}"
-    
+
+    detect_os
+    if [ "$OS" = "windows" ]; then
+        INSTALL_DIR="$HOME/bin"
+    fi
+
     if [ "$OS" != "windows" ] && [ "$EUID" -ne 0 ]; then
         echo -e "${YELLOW}This script requires sudo privileges${NC}"
         exit 1
@@ -176,10 +187,6 @@ case "${1:-install}" in
         install
         ;;
     uninstall)
-        detect_os
-        if [ "$OS" = "windows" ]; then
-            INSTALL_DIR="."
-        fi
         uninstall
         ;;
     *)
