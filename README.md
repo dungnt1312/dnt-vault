@@ -22,6 +22,12 @@ Windows (Bash / Git Bash):
 curl -fsSL https://raw.githubusercontent.com/dungnt1312/dnt-vault/master/install.sh | bash
 ```
 
+Then reload PATH:
+
+```
+source ~/.bashrc
+```
+
 Or download binaries directly from [Releases](https://github.com/dungnt1312/dnt-vault/releases).
 
 ## Quick Start

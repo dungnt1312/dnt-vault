@@ -127,9 +127,18 @@ install() {
     echo ""
 
     if [ "$OS" = "windows" ]; then
-        echo -e "${YELLOW}Add to PATH or run from current directory:${NC}"
-        echo -e "  ./dnt-vault-server.exe"
-        echo -e "  ./dnt-vault.exe"
+        # Add install dir to PATH in ~/.bashrc if not already there
+        INSTALL_DIR_ABS="$(cd "$INSTALL_DIR" && pwd)"
+        BASHRC="$HOME/.bashrc"
+        if ! grep -qF "$INSTALL_DIR_ABS" "$BASHRC" 2>/dev/null; then
+            echo "" >> "$BASHRC"
+            echo "# dnt-vault" >> "$BASHRC"
+            echo "export PATH=\"\$PATH:$INSTALL_DIR_ABS\"" >> "$BASHRC"
+            echo -e "${GREEN}✓ Added to PATH in $BASHRC${NC}"
+            echo -e "${YELLOW}  Run: source ~/.bashrc  (or restart terminal)${NC}"
+        else
+            echo -e "${GREEN}✓ PATH already configured in $BASHRC${NC}"
+        fi
     else
         echo -e "${CYAN}Usage:${NC}"
         echo -e "  dnt-vault-server    # Start server"

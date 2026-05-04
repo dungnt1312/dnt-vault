@@ -17,6 +17,11 @@ import (
 )
 
 func main() {
+	host := os.Getenv("HOST")
+	if host == "" {
+		host = "0.0.0.0"
+	}
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8443"
@@ -71,7 +76,7 @@ func main() {
 	middleware := api.NewMiddleware(authService)
 	router := api.NewRouter(handler, middleware)
 
-	addr := fmt.Sprintf("0.0.0.0:%s", port)
+	addr := fmt.Sprintf("%s:%s", host, port)
 	srv := &http.Server{
 		Addr:         addr,
 		Handler:      router,
