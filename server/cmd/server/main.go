@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
+	"time"
 
 	"github.com/dnt/vault-server/internal/api"
 	"github.com/dnt/vault-server/internal/auth"
@@ -68,11 +72,33 @@ func main() {
 	router := api.NewRouter(handler, middleware)
 
 	addr := fmt.Sprintf("0.0.0.0:%s", port)
-	log.Printf("DNT-Vault server starting on %s", addr)
-	log.Printf("Data path: %s", dataPath)
-	log.Printf("Config path: %s", configPath)
-
-	if err := http.ListenAndServe(addr, router); err != nil {
-		log.Fatalf("Server failed: %v", err)
+	srv := &http.Server{
+		Addr:         addr,
+		Handler:      router,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
 	}
+
+	go func() {
+		log.Printf("DNT-Vault server %s (built %s, commit %s) starting on %s", Version, BuildTime, CommitSHA, addr)
+		log.Printf("Data path: %s", dataPath)
+		log.Printf("Config path: %s", configPath)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Server failed: %v", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Println("Shutting down server...")
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
+	}
+	log.Println("Server exited")
 }

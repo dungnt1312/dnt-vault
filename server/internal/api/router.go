@@ -1,6 +1,8 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/gorilla/mux"
 )
 
@@ -9,10 +11,11 @@ func NewRouter(handler *Handler, middleware *Middleware) *mux.Router {
 
 	r.Use(middleware.LoggingMiddleware)
 	r.Use(middleware.CORSMiddleware)
+	r.Use(middleware.BodyLimitMiddleware)
 
 	api := r.PathPrefix("/api/v1").Subrouter()
 
-	api.HandleFunc("/auth/login", handler.Login).Methods("POST")
+	api.Handle("/auth/login", middleware.LoginRateLimitMiddleware(http.HandlerFunc(handler.Login))).Methods("POST")
 
 	protected := api.PathPrefix("").Subrouter()
 	protected.Use(middleware.AuthMiddleware)

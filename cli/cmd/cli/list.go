@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/dnt/vault-cli/internal/client"
+	appconfig "github.com/dnt/vault-cli/internal/config"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
@@ -22,7 +23,7 @@ func init() {
 }
 
 func runList(cmd *cobra.Command, args []string) error {
-	cfg, err := loadConfig()
+	cfg, err := appconfig.LoadAppConfig()
 	if err != nil {
 		return fmt.Errorf("config not found. Run 'ssh-sync init' first")
 	}

@@ -5,34 +5,11 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/dnt/vault-cli/internal/config"
 	"github.com/dnt/vault-cli/internal/interactive"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 )
-
-type Config struct {
-	Server struct {
-		URL       string `yaml:"url"`
-		TLSVerify bool   `yaml:"tls_verify"`
-	} `yaml:"server"`
-	SSH struct {
-		ConfigPath string `yaml:"config_path"`
-		KeysDir    string `yaml:"keys_dir"`
-	} `yaml:"ssh"`
-	Profiles struct {
-		Current           string `yaml:"current"`
-		DefaultNameFormat string `yaml:"default_name_format"`
-	} `yaml:"profiles"`
-	Backup struct {
-		Enabled    bool   `yaml:"enabled"`
-		Dir        string `yaml:"dir"`
-		MaxBackups int    `yaml:"max_backups"`
-	} `yaml:"backup"`
-	Encryption struct {
-		MasterKeyFile string `yaml:"master_key_file"`
-	} `yaml:"encryption"`
-}
 
 var initCmd = &cobra.Command{
 	Use:   "init",
@@ -98,28 +75,23 @@ func runInit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	config := Config{}
-	config.Server.URL = serverURL
-	config.Server.TLSVerify = true
-	config.SSH.ConfigPath = filepath.Join(homeDir, ".ssh", "config")
-	config.SSH.KeysDir = filepath.Join(homeDir, ".ssh")
-	config.Profiles.DefaultNameFormat = "{hostname}"
-	config.Backup.Enabled = true
-	config.Backup.Dir = filepath.Join(configDir, "backups")
-	config.Backup.MaxBackups = 10
-	config.Encryption.MasterKeyFile = masterKeyFile
+	cfg := config.AppConfig{}
+	cfg.Server.URL = serverURL
+	cfg.Server.TLSVerify = true
+	cfg.SSH.ConfigPath = filepath.Join(homeDir, ".ssh", "config")
+	cfg.SSH.KeysDir = filepath.Join(homeDir, ".ssh")
+	cfg.Profiles.DefaultNameFormat = "{hostname}"
+	cfg.Backup.Enabled = true
+	cfg.Backup.Dir = filepath.Join(configDir, "backups")
+	cfg.Backup.MaxBackups = 10
+	cfg.Encryption.MasterKeyFile = masterKeyFile
 
-	data, err := yaml.Marshal(config)
-	if err != nil {
-		return err
-	}
-
-	if err := os.WriteFile(configFile, data, 0600); err != nil {
+	if err := config.SaveAppConfig(&cfg); err != nil {
 		return err
 	}
 
 	fmt.Println(color.GreenString("\n✓ Master key generated and saved to %s", masterKeyFile))
-	fmt.Println(color.GreenString("✓ Configuration saved to %s", configFile))
+	fmt.Println(color.GreenString("✓ Configuration saved to %s", filepath.Join(configDir, "config.yaml")))
 	fmt.Println(color.CyanString("\nRun 'ssh-sync login' to authenticate with the vault."))
 
 	return nil

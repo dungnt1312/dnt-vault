@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/dnt/vault-cli/internal/client"
-	"github.com/dnt/vault-cli/internal/config"
+	appconfig "github.com/dnt/vault-cli/internal/config"
 	"github.com/dnt/vault-cli/internal/crypto"
 	"github.com/dnt/vault-cli/internal/interactive"
 	"github.com/fatih/color"
@@ -34,7 +34,7 @@ func init() {
 }
 
 func runPush(cmd *cobra.Command, args []string) error {
-	cfg, err := loadConfig()
+	cfg, err := appconfig.LoadAppConfig()
 	if err != nil {
 		return fmt.Errorf("config not found. Run 'ssh-sync init' first")
 	}
@@ -49,7 +49,7 @@ func runPush(cmd *cobra.Command, args []string) error {
 
 	fmt.Println(color.CyanString("Analyzing SSH config..."))
 
-	sshConfig, err := config.ParseSSHConfig(cfg.SSH.ConfigPath)
+	sshConfig, err := appconfig.ParseSSHConfig(cfg.SSH.ConfigPath)
 	if err != nil {
 		return fmt.Errorf("failed to parse SSH config: %v", err)
 	}

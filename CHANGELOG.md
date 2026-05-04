@@ -37,6 +37,27 @@ All notable changes to DNT-Vault will be documented in this file.
 - build.sh - Build both server and CLI
 - test.sh - Integration tests
 
+## [1.1.0] - 2026-05-04
+
+### Added
+- Version command for CLI (`ssh-sync version`) with build-time version embedding via ldflags
+- Version info logged at server startup
+- Server graceful shutdown on SIGINT/SIGTERM with 30s drain timeout
+- Per-IP login rate limiting (5 attempts/minute) to protect against brute-force
+- Request body size limit (10MB) to prevent OOM attacks
+- Structured request logging: method, path, status code, duration
+
+### Changed
+- `build.sh` now injects Version, BuildTime, CommitSHA via `-ldflags` automatically from git tag
+- `AppConfig` struct and `LoadAppConfig()` moved to `cli/internal/config` package (previously duplicated across cmd files)
+- `http.Server` now has ReadTimeout (15s), WriteTimeout (15s), IdleTimeout (60s)
+- Diff algorithm replaced with LCS-based implementation (was positional, now correct)
+- `context.WithValue` uses typed key instead of plain string
+
+### Fixed
+- **Critical**: `SaveProfile` now writes atomically via temp dir + `os.Rename` — prevents corrupted profiles on crash mid-write
+- `ListProfiles` now skips leftover `.tmp-*` directories
+
 ## [Unreleased]
 
 ### Planned

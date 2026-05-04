@@ -8,7 +8,7 @@ import (
 
 	"github.com/dnt/vault-cli/internal/backup"
 	"github.com/dnt/vault-cli/internal/client"
-	"github.com/dnt/vault-cli/internal/config"
+	appconfig "github.com/dnt/vault-cli/internal/config"
 	"github.com/dnt/vault-cli/internal/crypto"
 	"github.com/dnt/vault-cli/internal/interactive"
 	"github.com/fatih/color"
@@ -29,7 +29,7 @@ func init() {
 }
 
 func runPull(cmd *cobra.Command, args []string) error {
-	cfg, err := loadConfig()
+	cfg, err := appconfig.LoadAppConfig()
 	if err != nil {
 		return fmt.Errorf("config not found. Run 'ssh-sync init' first")
 	}
@@ -112,9 +112,9 @@ func runPull(cmd *cobra.Command, args []string) error {
 		localConfigExists = true
 	}
 
-	if localConfigExists && config.HasDifference(localConfig, decryptedConfig) {
+	if localConfigExists && appconfig.HasDifference(localConfig, decryptedConfig) {
 		fmt.Println(color.YellowString("\n⚠ Local SSH config exists and differs from vault.\n"))
-		config.ShowDiff(localConfig, decryptedConfig)
+		appconfig.ShowDiff(localConfig, decryptedConfig)
 
 		abort, err := interactive.PromptConfirm("\nAbort pull?", true)
 		if err != nil {
@@ -137,7 +137,7 @@ func runPull(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println(color.CyanString("Writing to %s...", cfg.SSH.ConfigPath))
-	if err := config.WriteSSHConfig(cfg.SSH.ConfigPath, decryptedConfig); err != nil {
+	if err := appconfig.WriteSSHConfig(cfg.SSH.ConfigPath, decryptedConfig); err != nil {
 		return fmt.Errorf("failed to write config: %v", err)
 	}
 

@@ -47,7 +47,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ListProfiles(w http.ResponseWriter, r *http.Request) {
-	username := r.Context().Value("username").(string)
+	username := r.Context().Value(usernameKey).(string)
 
 	profiles, err := h.storage.ListProfiles(username)
 	if err != nil {
@@ -61,7 +61,7 @@ func (h *Handler) ListProfiles(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
-	username := r.Context().Value("username").(string)
+	username := r.Context().Value(usernameKey).(string)
 	vars := mux.Vars(r)
 	profileName := vars["name"]
 
@@ -75,7 +75,7 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) SaveProfile(w http.ResponseWriter, r *http.Request) {
-	username := r.Context().Value("username").(string)
+	username := r.Context().Value(usernameKey).(string)
 	vars := mux.Vars(r)
 	profileName := vars["name"]
 
@@ -104,7 +104,7 @@ func (h *Handler) SaveProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteProfile(w http.ResponseWriter, r *http.Request) {
-	username := r.Context().Value("username").(string)
+	username := r.Context().Value(usernameKey).(string)
 	vars := mux.Vars(r)
 	profileName := vars["name"]
 

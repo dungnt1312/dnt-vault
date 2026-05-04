@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/dnt/vault-server/internal/models"
 )
@@ -32,28 +33,31 @@ func (fs *FilesystemStorage) getProfilePath(username, profileName string) string
 }
 
 func (fs *FilesystemStorage) SaveProfile(username string, data models.ProfileData) error {
-	profilePath := fs.getProfilePath(username, data.Profile.Name)
-
-	if err := os.MkdirAll(profilePath, 0755); err != nil {
+	userPath := fs.getUserPath(username)
+	if err := os.MkdirAll(userPath, 0755); err != nil {
 		return err
 	}
 
-	metadataPath := filepath.Join(profilePath, "metadata.json")
+	tmpDir, err := os.MkdirTemp(userPath, ".tmp-"+data.Profile.Name+"-*")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tmpDir)
+
 	metadataData, err := json.MarshalIndent(data.Profile, "", "  ")
 	if err != nil {
 		return err
 	}
-	if err := os.WriteFile(metadataPath, metadataData, 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(tmpDir, "metadata.json"), metadataData, 0644); err != nil {
 		return err
 	}
 
-	configPath := filepath.Join(profilePath, "config.enc")
-	if err := os.WriteFile(configPath, []byte(data.Config), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(tmpDir, "config.enc"), []byte(data.Config), 0644); err != nil {
 		return err
 	}
 
 	if len(data.Keys) > 0 {
-		keysPath := filepath.Join(profilePath, "keys")
+		keysPath := filepath.Join(tmpDir, "keys")
 		if err := os.MkdirAll(keysPath, 0755); err != nil {
 			return err
 		}
@@ -65,17 +69,23 @@ func (fs *FilesystemStorage) SaveProfile(username string, data models.ProfileDat
 			}
 		}
 
-		keysIVPath := filepath.Join(profilePath, "keys_iv.json")
 		keysIVData, err := json.Marshal(data.KeysIV)
 		if err != nil {
 			return err
 		}
-		if err := os.WriteFile(keysIVPath, keysIVData, 0644); err != nil {
+		if err := os.WriteFile(filepath.Join(tmpDir, "keys_iv.json"), keysIVData, 0644); err != nil {
 			return err
 		}
 	}
 
-	return nil
+	profilePath := fs.getProfilePath(username, data.Profile.Name)
+	if _, err := os.Stat(profilePath); err == nil {
+		if err := os.RemoveAll(profilePath); err != nil {
+			return err
+		}
+	}
+
+	return os.Rename(tmpDir, profilePath)
 }
 
 func (fs *FilesystemStorage) GetProfile(username, name string) (*models.ProfileData, error) {
@@ -160,7 +170,7 @@ func (fs *FilesystemStorage) ListProfiles(username string) ([]models.Profile, er
 
 	var profiles []models.Profile
 	for _, entry := range entries {
-		if !entry.IsDir() {
+		if !entry.IsDir() || strings.HasPrefix(entry.Name(), ".tmp-") {
 			continue
 		}
 
