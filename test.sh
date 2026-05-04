@@ -14,7 +14,7 @@ NC='\033[0m'
 
 # Paths
 SERVER_BIN="./server/bin/dnt-vault-server"
-CLI_BIN="./cli/bin/ssh-sync"
+CLI_BIN="./cli/bin/dnt-vault"
 TEST_DIR="/tmp/dnt-vault-test"
 SERVER_DATA="$TEST_DIR/server-data"
 SERVER_CONFIG="$TEST_DIR/server-config"
@@ -34,7 +34,7 @@ trap cleanup EXIT
 # Setup
 echo -e "${YELLOW}Setting up test environment...${NC}"
 rm -rf "$TEST_DIR"
-mkdir -p "$SERVER_DATA" "$SERVER_CONFIG" "$CLIENT_HOME/.ssh" "$CLIENT_HOME/.ssh-sync"
+mkdir -p "$SERVER_DATA" "$SERVER_CONFIG" "$CLIENT_HOME/.ssh" "$CLIENT_HOME/.dnt-vault"
 
 # Create test SSH config
 cat > "$CLIENT_HOME/.ssh/config" << 'EOF'

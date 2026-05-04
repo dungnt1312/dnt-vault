@@ -13,7 +13,7 @@ import (
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Initialize ssh-sync configuration",
+	Short: "Initialize dnt-vault configuration",
 	RunE:  runInit,
 }
 
@@ -27,7 +27,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	configDir := filepath.Join(homeDir, ".ssh-sync")
+	configDir := filepath.Join(homeDir, ".dnt-vault")
 	configFile := filepath.Join(configDir, "config.yaml")
 
 	if _, err := os.Stat(configFile); err == nil {
@@ -92,7 +92,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 
 	fmt.Println(color.GreenString("\n✓ Master key generated and saved to %s", masterKeyFile))
 	fmt.Println(color.GreenString("✓ Configuration saved to %s", filepath.Join(configDir, "config.yaml")))
-	fmt.Println(color.CyanString("\nRun 'ssh-sync login' to authenticate with the vault."))
+	fmt.Println(color.CyanString("\nRun 'dnt-vault login' to authenticate with the vault."))
 
 	return nil
 }

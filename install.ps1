@@ -24,7 +24,7 @@ if (-not (Test-Path $INSTALL_DIR)) {
 
 # Download URLs
 $SERVER_URL = "https://github.com/$REPO/releases/download/v$VERSION/dnt-vault-server-windows-$ARCH.exe"
-$CLI_URL = "https://github.com/$REPO/releases/download/v$VERSION/ssh-sync-windows-$ARCH.exe"
+$CLI_URL = "https://github.com/$REPO/releases/download/v$VERSION/dnt-vault-windows-$ARCH.exe"
 
 Write-Host "Downloading binaries..." -ForegroundColor Cyan
 Write-Host ""
@@ -42,7 +42,7 @@ try {
 # Download CLI
 Write-Host "Downloading CLI..." -ForegroundColor Yellow
 try {
-    Invoke-WebRequest -Uri $CLI_URL -OutFile "$INSTALL_DIR\ssh-sync.exe"
+    Invoke-WebRequest -Uri $CLI_URL -OutFile "$INSTALL_DIR\dnt-vault.exe"
     Write-Host "✓ CLI downloaded" -ForegroundColor Green
 } catch {
     Write-Host "✗ Failed to download CLI: $_" -ForegroundColor Red
@@ -71,12 +71,12 @@ if ($currentPath -notlike "*$INSTALL_DIR*") {
 Write-Host ""
 Write-Host "Usage:" -ForegroundColor Cyan
 Write-Host "  dnt-vault-server.exe    # Start server" -ForegroundColor White
-Write-Host "  ssh-sync.exe init       # Initialize client" -ForegroundColor White
+Write-Host "  dnt-vault.exe init       # Initialize client" -ForegroundColor White
 Write-Host ""
 Write-Host "Quick start:" -ForegroundColor Cyan
 Write-Host "  1. Start server: dnt-vault-server.exe" -ForegroundColor White
-Write-Host "  2. Init client:  ssh-sync.exe init" -ForegroundColor White
-Write-Host "  3. Login:        ssh-sync.exe login" -ForegroundColor White
-Write-Host "  4. Push config:  ssh-sync.exe push" -ForegroundColor White
+Write-Host "  2. Init client:  dnt-vault.exe init" -ForegroundColor White
+Write-Host "  3. Login:        dnt-vault.exe login" -ForegroundColor White
+Write-Host "  4. Push config:  dnt-vault.exe push" -ForegroundColor White
 Write-Host ""
 Write-Host "Documentation: https://github.com/$REPO" -ForegroundColor Cyan

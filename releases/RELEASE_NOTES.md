@@ -24,22 +24,22 @@ Download the appropriate binary for your platform:
 - Windows (64-bit): `dnt-vault-server-windows-amd64.exe`
 
 **CLI:**
-- Linux (amd64): `ssh-sync-linux-amd64`
-- Linux (arm64): `ssh-sync-linux-arm64`
-- macOS (Intel): `ssh-sync-darwin-amd64`
-- macOS (Apple Silicon): `ssh-sync-darwin-arm64`
-- Windows (64-bit): `ssh-sync-windows-amd64.exe`
+- Linux (amd64): `dnt-vault-linux-amd64`
+- Linux (arm64): `dnt-vault-linux-arm64`
+- macOS (Intel): `dnt-vault-darwin-amd64`
+- macOS (Apple Silicon): `dnt-vault-darwin-arm64`
+- Windows (64-bit): `dnt-vault-windows-amd64.exe`
 
 Make the binary executable:
 ```bash
 chmod +x dnt-vault-server-*
-chmod +x ssh-sync-*
+chmod +x dnt-vault-*
 ```
 
 Move to PATH:
 ```bash
 sudo mv dnt-vault-server-* /usr/local/bin/dnt-vault-server
-sudo mv ssh-sync-* /usr/local/bin/ssh-sync
+sudo mv dnt-vault-* /usr/local/bin/dnt-vault
 ```
 
 ## Checksums

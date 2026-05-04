@@ -29,7 +29,7 @@ Config path: /etc/dnt-vault
 
 ```bash
 # Initialize
-./cli/bin/ssh-sync init
+./cli/bin/dnt-vault init
 ```
 
 Interactive prompts:
@@ -46,15 +46,15 @@ This password encrypts your SSH configs.
   Enter master password: ****
   Confirm password: ****
 
-✓ Master key generated and saved to ~/.ssh-sync/master.key
-✓ Configuration saved to ~/.ssh-sync/config.yaml
+✓ Master key generated and saved to ~/.dnt-vault/master.key
+✓ Configuration saved to ~/.dnt-vault/config.yaml
 
-Run 'ssh-sync login' to authenticate with the vault.
+Run 'dnt-vault login' to authenticate with the vault.
 ```
 
 ```bash
 # Login
-./cli/bin/ssh-sync login
+./cli/bin/dnt-vault login
 ```
 
 Output:
@@ -64,12 +64,12 @@ Username: admin
 Password: ****
 
 ✓ Logged in successfully
-Token saved to ~/.ssh-sync/token
+Token saved to ~/.dnt-vault/token
 ```
 
 ```bash
 # Push your SSH config
-./cli/bin/ssh-sync push --include-keys
+./cli/bin/dnt-vault push --include-keys
 ```
 
 Output:
@@ -107,7 +107,7 @@ Uploading to vault...
 
 ```bash
 # Initialize
-./cli/bin/ssh-sync init
+./cli/bin/dnt-vault init
 ```
 
 ```
@@ -117,12 +117,12 @@ Master password: **** (same as work laptop)
 
 ```bash
 # Login
-./cli/bin/ssh-sync login
+./cli/bin/dnt-vault login
 ```
 
 ```bash
 # List available profiles
-./cli/bin/ssh-sync list
+./cli/bin/dnt-vault list
 ```
 
 Output:
@@ -139,7 +139,7 @@ Total: 1 profiles
 
 ```bash
 # Pull the profile
-./cli/bin/ssh-sync pull
+./cli/bin/dnt-vault pull
 ```
 
 Output:
@@ -170,7 +170,7 @@ Diff:
 
 Abort pull? [Y/n]: n
 
-Creating backup: ~/.ssh-sync/backups/2026-05-04_10-30-00.bak
+Creating backup: ~/.dnt-vault/backups/2026-05-04_10-30-00.bak
 Writing to ~/.ssh/config...
 
 ⚠ This profile includes 2 private keys.
@@ -185,7 +185,7 @@ Decrypting keys...
 ✓ Profile 'work-laptop' pulled successfully
   Config restored
   2 keys restored
-  Backup saved: ~/.ssh-sync/backups/2026-05-04_10-30-00.bak
+  Backup saved: ~/.dnt-vault/backups/2026-05-04_10-30-00.bak
 ```
 
 ---
@@ -196,14 +196,14 @@ On work laptop, after adding a new host:
 
 ```bash
 # Push updated config
-./cli/bin/ssh-sync push
+./cli/bin/dnt-vault push
 ```
 
 On home desktop:
 
 ```bash
 # Pull latest changes
-./cli/bin/ssh-sync pull --profile work-laptop
+./cli/bin/dnt-vault pull --profile work-laptop
 ```
 
 ---
@@ -214,13 +214,13 @@ On home desktop:
 
 ```bash
 # Push with custom name
-./cli/bin/ssh-sync push --profile work-vpn
+./cli/bin/dnt-vault push --profile work-vpn
 
 # Push another profile
-./cli/bin/ssh-sync push --profile personal
+./cli/bin/dnt-vault push --profile personal
 
 # List all
-./cli/bin/ssh-sync list
+./cli/bin/dnt-vault list
 ```
 
 Output:
@@ -245,7 +245,7 @@ Total: 3 profiles
 ### Delete Old Profiles
 
 ```bash
-./cli/bin/ssh-sync delete --profile old-laptop
+./cli/bin/dnt-vault delete --profile old-laptop
 ```
 
 Output:
@@ -291,7 +291,7 @@ export TLS_KEY=/etc/letsencrypt/live/vault.yourdomain.com/privkey.pem
 
 ```bash
 # Update client config
-vim ~/.ssh-sync/config.yaml
+vim ~/.dnt-vault/config.yaml
 ```
 
 ```yaml
@@ -308,7 +308,7 @@ server:
 
 Unfortunately, there's no recovery. The master password is used to derive the encryption key. Without it, encrypted data cannot be decrypted.
 
-**Solution**: Delete `~/.ssh-sync/` and re-initialize. You'll need to push configs again.
+**Solution**: Delete `~/.dnt-vault/` and re-initialize. You'll need to push configs again.
 
 ### Forgot key passphrase?
 
@@ -323,5 +323,5 @@ Keys are encrypted separately. If you forget the passphrase, you can still pull 
 curl http://your-vps.com:8443/api/v1/profiles
 
 # Check client config
-cat ~/.ssh-sync/config.yaml
+cat ~/.dnt-vault/config.yaml
 ```

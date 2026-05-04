@@ -40,7 +40,7 @@ All notable changes to DNT-Vault will be documented in this file.
 ## [1.1.0] - 2026-05-04
 
 ### Added
-- Version command for CLI (`ssh-sync version`) with build-time version embedding via ldflags
+- Version command for CLI (`dnt-vault version`) with build-time version embedding via ldflags
 - Version info logged at server startup
 - Server graceful shutdown on SIGINT/SIGTERM with 30s drain timeout
 - Per-IP login rate limiting (5 attempts/minute) to protect against brute-force

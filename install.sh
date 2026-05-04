@@ -79,7 +79,7 @@ install() {
 
     # Download URLs
     SERVER_URL="https://github.com/$REPO/releases/download/v$VERSION/dnt-vault-server-$OS-$ARCH"
-    CLI_URL="https://github.com/$REPO/releases/download/v$VERSION/ssh-sync-$OS-$ARCH"
+    CLI_URL="https://github.com/$REPO/releases/download/v$VERSION/dnt-vault-$OS-$ARCH"
 
     if [ "$OS" = "windows" ]; then
         SERVER_URL="${SERVER_URL}.exe"
@@ -102,39 +102,39 @@ install() {
     # Download CLI
     echo -e "${YELLOW}Downloading CLI...${NC}"
     if command -v curl &> /dev/null; then
-        curl -L -o "$INSTALL_DIR/ssh-sync" "$CLI_URL"
+        curl -L -o "$INSTALL_DIR/dnt-vault" "$CLI_URL"
     else
-        wget -O "$INSTALL_DIR/ssh-sync" "$CLI_URL"
+        wget -O "$INSTALL_DIR/dnt-vault" "$CLI_URL"
     fi
 
     # Make executable
     chmod +x "$INSTALL_DIR/dnt-vault-server"
-    chmod +x "$INSTALL_DIR/ssh-sync"
+    chmod +x "$INSTALL_DIR/dnt-vault"
 
     echo ""
     echo -e "${GREEN}✓ Installation complete!${NC}"
     echo ""
     echo -e "${CYAN}Installed binaries:${NC}"
     echo -e "  Server: $INSTALL_DIR/dnt-vault-server"
-    echo -e "  CLI:    $INSTALL_DIR/ssh-sync"
+    echo -e "  CLI:    $INSTALL_DIR/dnt-vault"
     echo ""
 
     if [ "$OS" = "windows" ]; then
         echo -e "${YELLOW}Add current directory to PATH or use:${NC}"
         echo -e "  ./dnt-vault-server"
-        echo -e "  ./ssh-sync"
+        echo -e "  ./dnt-vault"
     else
         echo -e "${CYAN}Usage:${NC}"
         echo -e "  dnt-vault-server    # Start server"
-        echo -e "  ssh-sync init       # Initialize client"
+        echo -e "  dnt-vault init       # Initialize client"
     fi
 
     echo ""
     echo -e "${CYAN}Quick start:${NC}"
     echo -e "  1. Start server: dnt-vault-server"
-    echo -e "  2. Init client:  ssh-sync init"
-    echo -e "  3. Login:        ssh-sync login"
-    echo -e "  4. Push config:  ssh-sync push"
+    echo -e "  2. Init client:  dnt-vault init"
+    echo -e "  3. Login:        dnt-vault login"
+    echo -e "  4. Push config:  dnt-vault push"
     echo ""
     echo -e "${CYAN}Documentation: https://github.com/$REPO${NC}"
 }
@@ -149,7 +149,7 @@ uninstall() {
     fi
 
     rm -f "$INSTALL_DIR/dnt-vault-server"
-    rm -f "$INSTALL_DIR/ssh-sync"
+    rm -f "$INSTALL_DIR/dnt-vault"
 
     echo -e "${GREEN}✓ Uninstalled successfully${NC}"
 }

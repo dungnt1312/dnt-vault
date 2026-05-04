@@ -36,7 +36,7 @@ func LoadAppConfig() (*AppConfig, error) {
 		return nil, err
 	}
 
-	configFile := filepath.Join(homeDir, ".ssh-sync", "config.yaml")
+	configFile := filepath.Join(homeDir, ".dnt-vault", "config.yaml")
 	data, err := os.ReadFile(configFile)
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func SaveAppConfig(cfg *AppConfig) error {
 		return err
 	}
 
-	configDir := filepath.Join(homeDir, ".ssh-sync")
+	configDir := filepath.Join(homeDir, ".dnt-vault")
 	if err := os.MkdirAll(configDir, 0700); err != nil {
 		return err
 	}

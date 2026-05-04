@@ -32,11 +32,11 @@ func init() {
 func runLogin(cmd *cobra.Command, args []string) error {
 	cfg, err := config.LoadAppConfig()
 	if err != nil {
-		return fmt.Errorf("config not found. Run 'ssh-sync init' first")
+		return fmt.Errorf("config not found. Run 'dnt-vault init' first")
 	}
 
 	homeDir, _ := os.UserHomeDir()
-	tokenFile := filepath.Join(homeDir, ".ssh-sync", "token")
+	tokenFile := filepath.Join(homeDir, ".dnt-vault", "token")
 
 	c := client.NewClient(cfg.Server.URL, tokenFile)
 
@@ -64,7 +64,7 @@ func runLogin(cmd *cobra.Command, args []string) error {
 
 func runLogout(cmd *cobra.Command, args []string) error {
 	homeDir, _ := os.UserHomeDir()
-	tokenFile := filepath.Join(homeDir, ".ssh-sync", "token")
+	tokenFile := filepath.Join(homeDir, ".dnt-vault", "token")
 
 	if err := os.Remove(tokenFile); err != nil {
 		if os.IsNotExist(err) {

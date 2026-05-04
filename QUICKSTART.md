@@ -23,12 +23,12 @@ Default credentials: `admin/admin`
 
 ```bash
 # Terminal 2: Initialize client
-./cli/bin/ssh-sync init
+./cli/bin/dnt-vault init
 # Enter server URL: http://localhost:8443
 # Enter master password: (your choice)
 
 # Login
-./cli/bin/ssh-sync login
+./cli/bin/dnt-vault login
 # Username: admin
 # Password: admin
 ```
@@ -37,36 +37,36 @@ Default credentials: `admin/admin`
 
 ```bash
 # Push SSH config only
-./cli/bin/ssh-sync push
+./cli/bin/dnt-vault push
 
 # Or push with private keys
-./cli/bin/ssh-sync push --include-keys
+./cli/bin/dnt-vault push --include-keys
 ```
 
 ## 5. Pull on Another Machine
 
 ```bash
 # List available profiles
-./cli/bin/ssh-sync list
+./cli/bin/dnt-vault list
 
 # Pull interactively
-./cli/bin/ssh-sync pull
+./cli/bin/dnt-vault pull
 
 # Or pull specific profile
-./cli/bin/ssh-sync pull --profile your-hostname
+./cli/bin/dnt-vault pull --profile your-hostname
 ```
 
 ## Common Commands
 
 ```bash
 # List all profiles
-./cli/bin/ssh-sync list
+./cli/bin/dnt-vault list
 
 # Delete a profile
-./cli/bin/ssh-sync delete --profile old-laptop
+./cli/bin/dnt-vault delete --profile old-laptop
 
 # Logout
-./cli/bin/ssh-sync logout
+./cli/bin/dnt-vault logout
 ```
 
 ## Testing
@@ -94,7 +94,7 @@ tail -f /tmp/dnt-vault-config/server.log
 curl http://localhost:8443/api/v1/profiles
 
 # Check client config
-cat ~/.ssh-sync/config.yaml
+cat ~/.dnt-vault/config.yaml
 ```
 
 ### Decryption fails

@@ -107,7 +107,7 @@ Base64 encoded for storage/transmission.
 
 **Client**:
 ```
-~/.ssh-sync/
+~/.dnt-vault/
 ├── config.yaml             # Client configuration
 ├── master.key              # Master password (0600)
 ├── token                   # JWT token (0600)

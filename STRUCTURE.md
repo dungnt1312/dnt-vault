@@ -29,7 +29,7 @@ dnt-vault/
 │   ├── go.mod
 │   ├── go.sum
 │   ├── bin/
-│   │   └── ssh-sync             # CLI binary
+│   │   └── dnt-vault             # CLI binary
 │   ├── cmd/
 │   │   └── cli/
 │   │       ├── main.go          # CLI entry point

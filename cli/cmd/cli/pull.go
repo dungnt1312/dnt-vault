@@ -31,15 +31,15 @@ func init() {
 func runPull(cmd *cobra.Command, args []string) error {
 	cfg, err := appconfig.LoadAppConfig()
 	if err != nil {
-		return fmt.Errorf("config not found. Run 'ssh-sync init' first")
+		return fmt.Errorf("config not found. Run 'dnt-vault init' first")
 	}
 
 	homeDir, _ := os.UserHomeDir()
-	tokenFile := filepath.Join(homeDir, ".ssh-sync", "token")
+	tokenFile := filepath.Join(homeDir, ".dnt-vault", "token")
 
 	c := client.NewClient(cfg.Server.URL, tokenFile)
 	if err := c.LoadToken(); err != nil {
-		return fmt.Errorf("not logged in. Run 'ssh-sync login' first")
+		return fmt.Errorf("not logged in. Run 'dnt-vault login' first")
 	}
 
 	fmt.Println(color.CyanString("Fetching profiles from vault..."))

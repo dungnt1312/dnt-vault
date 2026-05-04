@@ -26,12 +26,12 @@ echo "✓ Server built: server/bin/dnt-vault-server"
 # Build CLI
 echo "Building CLI..."
 cd ../cli
-go build -ldflags "${LDFLAGS}" -o bin/ssh-sync ./cmd/cli
-echo "✓ CLI built: cli/bin/ssh-sync"
+go build -ldflags "${LDFLAGS}" -o bin/dnt-vault ./cmd/cli
+echo "✓ CLI built: cli/bin/dnt-vault"
 
 cd ..
 echo ""
 echo "Build complete! Version: ${VERSION}"
 echo ""
 echo "Server: ./server/bin/dnt-vault-server"
-echo "CLI:    ./cli/bin/ssh-sync"
+echo "CLI:    ./cli/bin/dnt-vault"

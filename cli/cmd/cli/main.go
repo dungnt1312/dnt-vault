@@ -8,7 +8,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "ssh-sync",
+	Use:   "dnt-vault",
 	Short: "DNT-Vault SSH Config Sync Tool",
 	Long:  `A CLI tool to sync SSH configs and keys across multiple machines using a self-hosted vault server.`,
 }

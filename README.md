@@ -44,29 +44,29 @@ Default credentials: `admin/admin` (change after first login)
 
 ```bash
 # Initialize configuration
-./cli/bin/ssh-sync init
+./cli/bin/dnt-vault init
 
 # Login to vault
-./cli/bin/ssh-sync login
+./cli/bin/dnt-vault login
 ```
 
 ### 3. Push/Pull Configs
 
 ```bash
 # Push current SSH config to vault
-./cli/bin/ssh-sync push
+./cli/bin/dnt-vault push
 
 # Push with private keys
-./cli/bin/ssh-sync push --include-keys
+./cli/bin/dnt-vault push --include-keys
 
 # List available profiles
-./cli/bin/ssh-sync list
+./cli/bin/dnt-vault list
 
 # Pull a profile
-./cli/bin/ssh-sync pull
+./cli/bin/dnt-vault pull
 
 # Pull specific profile
-./cli/bin/ssh-sync pull --profile work-laptop
+./cli/bin/dnt-vault pull --profile work-laptop
 ```
 
 ## CLI Commands
@@ -74,27 +74,27 @@ Default credentials: `admin/admin` (change after first login)
 ### Setup & Authentication
 
 ```bash
-ssh-sync init              # Initialize configuration
-ssh-sync login             # Login to vault server
-ssh-sync logout            # Logout
+dnt-vault init              # Initialize configuration
+dnt-vault login             # Login to vault server
+dnt-vault logout            # Logout
 ```
 
 ### Sync Operations
 
 ```bash
-ssh-sync push                          # Push config to vault
-ssh-sync push --include-keys           # Push config + private keys
-ssh-sync push --profile custom-name    # Custom profile name
+dnt-vault push                          # Push config to vault
+dnt-vault push --include-keys           # Push config + private keys
+dnt-vault push --profile custom-name    # Custom profile name
 
-ssh-sync pull                          # Interactive pull
-ssh-sync pull --profile work-laptop    # Pull specific profile
+dnt-vault pull                          # Interactive pull
+dnt-vault pull --profile work-laptop    # Pull specific profile
 ```
 
 ### Management
 
 ```bash
-ssh-sync list                          # List all profiles
-ssh-sync delete --profile old-laptop   # Delete profile
+dnt-vault list                          # List all profiles
+dnt-vault delete --profile old-laptop   # Delete profile
 ```
 
 ## Configuration
@@ -108,7 +108,7 @@ Environment variables:
 
 ### Client Config
 
-Located at `~/.ssh-sync/config.yaml`:
+Located at `~/.dnt-vault/config.yaml`:
 
 ```yaml
 server:
@@ -125,11 +125,11 @@ profiles:
 
 backup:
   enabled: true
-  dir: ~/.ssh-sync/backups
+  dir: ~/.dnt-vault/backups
   max_backups: 10
 
 encryption:
-  master_key_file: ~/.ssh-sync/master.key
+  master_key_file: ~/.dnt-vault/master.key
 ```
 
 ## Security
@@ -163,7 +163,7 @@ go build -o bin/dnt-vault-server ./cmd/server
 
 # Build CLI
 cd cli
-go build -o bin/ssh-sync ./cmd/cli
+go build -o bin/dnt-vault ./cmd/cli
 ```
 
 ## Deployment
@@ -207,10 +207,10 @@ sudo systemctl start dnt-vault
 
 ```bash
 # Copy to PATH
-sudo cp cli/bin/ssh-sync /usr/local/bin/
+sudo cp cli/bin/dnt-vault /usr/local/bin/
 
 # Or create alias
-echo 'alias ssh-sync="/path/to/cli/bin/ssh-sync"' >> ~/.bashrc
+echo 'alias dnt-vault="/path/to/cli/bin/dnt-vault"' >> ~/.bashrc
 ```
 
 ## Workflow Example
@@ -219,23 +219,23 @@ echo 'alias ssh-sync="/path/to/cli/bin/ssh-sync"' >> ~/.bashrc
 
 ```bash
 # Initialize and login
-ssh-sync init
-ssh-sync login
+dnt-vault init
+dnt-vault login
 
 # Push current config
-ssh-sync push --profile work-laptop --include-keys
+dnt-vault push --profile work-laptop --include-keys
 ```
 
 ### Pull on Another Machine (Machine B)
 
 ```bash
 # Initialize and login
-ssh-sync init
-ssh-sync login
+dnt-vault init
+dnt-vault login
 
 # List and pull
-ssh-sync list
-ssh-sync pull --profile work-laptop
+dnt-vault list
+dnt-vault pull --profile work-laptop
 ```
 
 ## API Documentation
@@ -266,7 +266,7 @@ All profile endpoints require `Authorization: Bearer <token>` header.
 - Verify permissions on data/config directories
 
 ### Login fails
-- Verify server URL in `~/.ssh-sync/config.yaml`
+- Verify server URL in `~/.dnt-vault/config.yaml`
 - Check server is running: `curl http://localhost:8443/api/v1/profiles`
 
 ### Decryption fails

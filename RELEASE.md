@@ -56,7 +56,7 @@ gh release create v$VERSION \
 curl -fsSL https://raw.githubusercontent.com/dungnt1312/dnt-vault/master/install.sh | bash
 
 # Test binaries
-ssh-sync --version
+dnt-vault --version
 dnt-vault-server --version
 ```
 

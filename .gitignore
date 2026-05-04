@@ -27,7 +27,7 @@ users.json
 jwt-secret
 
 # User config - SENSITIVE
-.ssh-sync/
+.dnt-vault/
 *.bak
 
 # Go
