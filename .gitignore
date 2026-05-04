@@ -16,12 +16,19 @@ cli/bin/
 # Test data
 /tmp/dnt-vault-test/
 
-# Runtime data
+# Runtime data - SENSITIVE
 /var/lib/dnt-vault/
 /etc/dnt-vault/
+*.key
+*.pem
+*secret*
+token
+users.json
+jwt-secret
 
-# User config
+# User config - SENSITIVE
 .ssh-sync/
+*.bak
 
 # Go
 *.test
@@ -32,3 +39,16 @@ go.work.sum
 
 # Logs
 *.log
+
+# OS
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Temporary files
+*.tmp
+*.temp
