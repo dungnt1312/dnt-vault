@@ -86,14 +86,21 @@ install() {
         CLI_URL="${CLI_URL}.exe"
     fi
 
+    SERVER_OUT="$INSTALL_DIR/dnt-vault-server"
+    CLI_OUT="$INSTALL_DIR/dnt-vault"
+    if [ "$OS" = "windows" ]; then
+        SERVER_OUT="${SERVER_OUT}.exe"
+        CLI_OUT="${CLI_OUT}.exe"
+    fi
+
     echo -e "${CYAN}Downloading binaries...${NC}"
 
     # Download server
     echo -e "${YELLOW}Downloading server...${NC}"
     if command -v curl &> /dev/null; then
-        curl -L -o "$INSTALL_DIR/dnt-vault-server" "$SERVER_URL"
+        curl -L -o "$SERVER_OUT" "$SERVER_URL"
     elif command -v wget &> /dev/null; then
-        wget -O "$INSTALL_DIR/dnt-vault-server" "$SERVER_URL"
+        wget -O "$SERVER_OUT" "$SERVER_URL"
     else
         echo -e "${RED}Error: curl or wget is required${NC}"
         exit 1
@@ -102,31 +109,31 @@ install() {
     # Download CLI
     echo -e "${YELLOW}Downloading CLI...${NC}"
     if command -v curl &> /dev/null; then
-        curl -L -o "$INSTALL_DIR/dnt-vault" "$CLI_URL"
+        curl -L -o "$CLI_OUT" "$CLI_URL"
     else
-        wget -O "$INSTALL_DIR/dnt-vault" "$CLI_URL"
+        wget -O "$CLI_OUT" "$CLI_URL"
     fi
 
     # Make executable
-    chmod +x "$INSTALL_DIR/dnt-vault-server"
-    chmod +x "$INSTALL_DIR/dnt-vault"
+    chmod +x "$SERVER_OUT"
+    chmod +x "$CLI_OUT"
 
     echo ""
     echo -e "${GREEN}✓ Installation complete!${NC}"
     echo ""
     echo -e "${CYAN}Installed binaries:${NC}"
-    echo -e "  Server: $INSTALL_DIR/dnt-vault-server"
-    echo -e "  CLI:    $INSTALL_DIR/dnt-vault"
+    echo -e "  Server: $SERVER_OUT"
+    echo -e "  CLI:    $CLI_OUT"
     echo ""
 
     if [ "$OS" = "windows" ]; then
-        echo -e "${YELLOW}Add current directory to PATH or use:${NC}"
-        echo -e "  ./dnt-vault-server"
-        echo -e "  ./dnt-vault"
+        echo -e "${YELLOW}Add to PATH or run from current directory:${NC}"
+        echo -e "  ./dnt-vault-server.exe"
+        echo -e "  ./dnt-vault.exe"
     else
         echo -e "${CYAN}Usage:${NC}"
         echo -e "  dnt-vault-server    # Start server"
-        echo -e "  dnt-vault init       # Initialize client"
+        echo -e "  dnt-vault init      # Initialize client"
     fi
 
     echo ""
@@ -148,8 +155,8 @@ uninstall() {
         exit 1
     fi
 
-    rm -f "$INSTALL_DIR/dnt-vault-server"
-    rm -f "$INSTALL_DIR/dnt-vault"
+    rm -f "$INSTALL_DIR/dnt-vault-server" "$INSTALL_DIR/dnt-vault-server.exe"
+    rm -f "$INSTALL_DIR/dnt-vault" "$INSTALL_DIR/dnt-vault.exe"
 
     echo -e "${GREEN}✓ Uninstalled successfully${NC}"
 }

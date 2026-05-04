@@ -13,7 +13,13 @@ curl -fsSL https://raw.githubusercontent.com/dungnt1312/dnt-vault/master/install
 Windows (PowerShell):
 
 ```
-irm https://raw.githubusercontent.com/dungnt1312/dnt-vault/master/install.ps1 | iex
+irm https://raw.githubusercontent.com/dungnt1312/dnt-vault/master/install.ps1 -OutFile "$env:TEMP\install.ps1"; & "$env:TEMP\install.ps1"
+```
+
+Windows (Bash / Git Bash):
+
+```
+curl -fsSL https://raw.githubusercontent.com/dungnt1312/dnt-vault/master/install.sh | bash
 ```
 
 Or download binaries directly from [Releases](https://github.com/dungnt1312/dnt-vault/releases).
