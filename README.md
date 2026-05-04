@@ -1,195 +1,142 @@
-# DNT-Vault SSH Config Sync
+# dnt-vault
 
-Self-hosted SSH config and keys synchronization tool written in Go.
+Self-hosted SSH config and key synchronization tool written in Go. Sync your `~/.ssh/config` and private keys across machines through your own vault server — encrypted client-side, no third-party services.
 
-## Features
+## Install
 
-- 🔐 **Secure**: Client-side encryption with AES-256-GCM
-- 🔑 **Private Keys**: Optional sync with passphrase protection
-- 🏠 **Self-hosted**: No third-party services required
-- 🚀 **Simple**: Easy setup and intuitive CLI
-- 🔄 **Conflict Detection**: Shows diff before overwriting
-- 💾 **Auto Backup**: Automatic backups before pulling
-
-## Architecture
+Linux / macOS:
 
 ```
-┌─────────────┐         HTTPS/HTTP        ┌─────────────┐
-│   Client    │ ◄────────────────────────► │   Server    │
-│  (CLI Tool) │    Encrypted Data Only     │   (Vault)   │
-└─────────────┘                            └─────────────┘
+curl -fsSL https://raw.githubusercontent.com/dungnt1312/dnt-vault/master/install.sh | sudo bash
 ```
 
-- **Server**: REST API vault server (stores encrypted data)
-- **Client**: CLI tool for push/pull operations
-- **Encryption**: All data encrypted client-side before upload
+Windows (PowerShell):
+
+```
+irm https://raw.githubusercontent.com/dungnt1312/dnt-vault/master/install.ps1 | iex
+```
+
+Or download binaries directly from [Releases](https://github.com/dungnt1312/dnt-vault/releases).
 
 ## Quick Start
 
-### 1. Start Server
+### 1. Start the Server
 
-```bash
-# Set environment variables (optional)
-export PORT=8443
-export DATA_PATH=/var/lib/dnt-vault/data
-export CONFIG_PATH=/etc/dnt-vault
-
-# Run server
-./server/bin/dnt-vault-server
+```
+dnt-vault-server
 ```
 
-Default credentials: `admin/admin` (change after first login)
+Starts on `0.0.0.0:8443` by default. Default credentials: `admin` / `admin`.
 
-### 2. Setup Client
-
-```bash
-# Initialize configuration
-./cli/bin/dnt-vault init
-
-# Login to vault
-./cli/bin/dnt-vault login
+```
+PORT=8443
+DATA_PATH=~/dnt-vault/data
+CONFIG_PATH=~/dnt-vault/config
 ```
 
-### 3. Push/Pull Configs
+### 2. Initialize Client
 
-```bash
-# Push current SSH config to vault
-./cli/bin/dnt-vault push
+```
+dnt-vault init
+```
 
-# Push with private keys
-./cli/bin/dnt-vault push --include-keys
+Enter your server URL and set a master password. Config saved to `~/.dnt-vault/config.yaml`.
 
-# List available profiles
-./cli/bin/dnt-vault list
+### 3. Login
 
-# Pull a profile
-./cli/bin/dnt-vault pull
+```
+dnt-vault login
+```
 
-# Pull specific profile
-./cli/bin/dnt-vault pull --profile work-laptop
+### 4. Push SSH Config
+
+```
+dnt-vault push
+```
+
+Push with private keys:
+
+```
+dnt-vault push --include-keys
+```
+
+### 5. Pull on Another Machine
+
+```
+dnt-vault init    # set same server URL + master password
+dnt-vault login
+dnt-vault pull
 ```
 
 ## CLI Commands
 
-### Setup & Authentication
-
-```bash
-dnt-vault init              # Initialize configuration
-dnt-vault login             # Login to vault server
-dnt-vault logout            # Logout
 ```
+dnt-vault init                          # Initialize config + master password
+dnt-vault login                         # Login to vault server
+dnt-vault logout                        # Clear local token
 
-### Sync Operations
-
-```bash
-dnt-vault push                          # Push config to vault
+dnt-vault push                          # Push SSH config to vault
 dnt-vault push --include-keys           # Push config + private keys
-dnt-vault push --profile custom-name    # Custom profile name
+dnt-vault push --profile <name>         # Custom profile name
 
-dnt-vault pull                          # Interactive pull
-dnt-vault pull --profile work-laptop    # Pull specific profile
-```
+dnt-vault pull                          # Interactive pull (select profile)
+dnt-vault pull --profile <name>         # Pull specific profile
 
-### Management
-
-```bash
 dnt-vault list                          # List all profiles
-dnt-vault delete --profile old-laptop   # Delete profile
+dnt-vault delete --profile <name>       # Delete a profile
+
+dnt-vault version                       # Show version info
 ```
+
+## Features
+
+- Client-side encryption: AES-256-GCM with PBKDF2 key derivation — server never sees plaintext.
+- Private key sync: Optional, encrypted with a separate passphrase.
+- Conflict detection: LCS-based diff before overwriting local config.
+- Auto backup: Timestamped backups before every pull.
+- Multi-profile: Multiple named profiles per user.
+- Multi-user: Each user has isolated encrypted storage.
+- Rate limiting: 5 login attempts/minute per IP.
+- Graceful shutdown: Drains in-flight requests on SIGINT/SIGTERM.
 
 ## Configuration
 
-### Server Config
-
-Environment variables:
-- `PORT`: Server port (default: 8443)
-- `DATA_PATH`: Data storage path (default: /var/lib/dnt-vault/data)
-- `CONFIG_PATH`: Config path (default: /etc/dnt-vault)
-
-### Client Config
-
-Located at `~/.dnt-vault/config.yaml`:
+Client config at `~/.dnt-vault/config.yaml`:
 
 ```yaml
 server:
-  url: http://localhost:8443
+  url: http://your-server:8443
   tls_verify: true
-
 ssh:
   config_path: ~/.ssh/config
   keys_dir: ~/.ssh
-
-profiles:
-  current: ""
-  default_name_format: "{hostname}"
-
 backup:
   enabled: true
   dir: ~/.dnt-vault/backups
   max_backups: 10
-
 encryption:
   master_key_file: ~/.dnt-vault/master.key
 ```
 
-## Security
+Server environment variables:
 
-### Encryption Layers
-
-1. **Transport**: HTTPS (TLS 1.3)
-2. **Authentication**: JWT tokens (24h expiry)
-3. **Data at Rest**: AES-256-GCM encryption
-4. **Private Keys**: Separate passphrase protection
-
-### Key Points
-
-- Server never sees plaintext data
-- Master password stored locally only
-- Private keys encrypted with separate passphrase
-- All sensitive files have 0600 permissions
-
-## Building from Source
-
-### Requirements
-
-- Go 1.22+
-
-### Build
-
-```bash
-# Build server
-cd server
-go build -o bin/dnt-vault-server ./cmd/server
-
-# Build CLI
-cd cli
-go build -o bin/dnt-vault ./cmd/cli
+```
+PORT=8443
+DATA_PATH=~/dnt-vault/data
+CONFIG_PATH=~/dnt-vault/config
 ```
 
-## Deployment
-
-### Server (VPS)
+## Run as a systemd Service
 
 ```bash
-# Create directories
-sudo mkdir -p /var/lib/dnt-vault/data
-sudo mkdir -p /etc/dnt-vault
-
-# Copy binary
-sudo cp server/bin/dnt-vault-server /usr/local/bin/
-
-# Create systemd service
-sudo tee /etc/systemd/system/dnt-vault.service << EOF
+sudo tee /etc/systemd/system/dnt-vault.service << 'EOF'
 [Unit]
 Description=DNT-Vault SSH Config Sync Server
 After=network.target
 
 [Service]
 Type=simple
-User=dnt-vault
 Environment="PORT=8443"
-Environment="DATA_PATH=/var/lib/dnt-vault/data"
-Environment="CONFIG_PATH=/etc/dnt-vault"
 ExecStart=/usr/local/bin/dnt-vault-server
 Restart=on-failure
 
@@ -197,86 +144,51 @@ Restart=on-failure
 WantedBy=multi-user.target
 EOF
 
-# Start service
 sudo systemctl daemon-reload
-sudo systemctl enable dnt-vault
-sudo systemctl start dnt-vault
+sudo systemctl enable --now dnt-vault
 ```
 
-### Client
+## Architecture
+
+```
+┌─────────────┐      HTTP/HTTPS       ┌──────────────────┐
+│  dnt-vault  │ ────── encrypted ───► │ dnt-vault-server │
+│    (CLI)    │ ◄──── data only ────  │   (REST API)     │
+└─────────────┘                       └──────────────────┘
+```
+
+- `server/`: REST API vault — stores encrypted blobs, JWT auth, filesystem storage.
+- `cli/`: CLI tool — encrypts locally, pushes/pulls via HTTP.
+- `shared/`: Common types shared between server and CLI.
+
+## Build from Source
+
+Requirements: Go 1.22+
 
 ```bash
-# Copy to PATH
-sudo cp cli/bin/dnt-vault /usr/local/bin/
-
-# Or create alias
-echo 'alias dnt-vault="/path/to/cli/bin/dnt-vault"' >> ~/.bashrc
+./build.sh
+# server/bin/dnt-vault-server
+# cli/bin/dnt-vault
 ```
 
-## Workflow Example
+## API
 
-### Initial Setup (Machine A)
-
-```bash
-# Initialize and login
-dnt-vault init
-dnt-vault login
-
-# Push current config
-dnt-vault push --profile work-laptop --include-keys
 ```
-
-### Pull on Another Machine (Machine B)
-
-```bash
-# Initialize and login
-dnt-vault init
-dnt-vault login
-
-# List and pull
-dnt-vault list
-dnt-vault pull --profile work-laptop
+POST   /api/v1/auth/login           # Login → JWT token
+GET    /api/v1/profiles             # List profiles        [auth]
+GET    /api/v1/profiles/:name       # Get profile data     [auth]
+POST   /api/v1/profiles/:name       # Save profile         [auth]
+DELETE /api/v1/profiles/:name       # Delete profile       [auth]
 ```
-
-## API Documentation
-
-### Authentication
-
-**POST /api/v1/auth/login**
-```json
-{
-  "username": "admin",
-  "password": "secret"
-}
-```
-
-### Profiles
-
-**GET /api/v1/profiles** - List all profiles  
-**GET /api/v1/profiles/:name** - Get profile data  
-**POST /api/v1/profiles/:name** - Create/update profile  
-**DELETE /api/v1/profiles/:name** - Delete profile
-
-All profile endpoints require `Authorization: Bearer <token>` header.
 
 ## Troubleshooting
 
-### Server won't start
-- Check if port is already in use: `lsof -i :8443`
-- Verify permissions on data/config directories
+**Server won't start** — check port: `lsof -i :8443`
 
-### Login fails
-- Verify server URL in `~/.dnt-vault/config.yaml`
-- Check server is running: `curl http://localhost:8443/api/v1/profiles`
+**Login fails** — verify URL in `~/.dnt-vault/config.yaml`, check server is up: `curl http://localhost:8443/api/v1/profiles`
 
-### Decryption fails
-- Ensure master password is correct
-- For keys: verify passphrase matches what was used during push
+**Decryption fails** — master password must match what was used during `push`
 
 ## License
 
 MIT
-
-## Author
-
-DNT Team
