@@ -1,0 +1,34 @@
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Binaries
+server/bin/
+cli/bin/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test data
+/tmp/dnt-vault-test/
+
+# Runtime data
+/var/lib/dnt-vault/
+/etc/dnt-vault/
+
+# User config
+.ssh-sync/
+
+# Go
+*.test
+*.out
+vendor/
+go.work
+go.work.sum
+
+# Logs
+*.log
