@@ -18,14 +18,19 @@ func main() {
 		port = "8443"
 	}
 
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatalf("Failed to get home directory: %v", err)
+	}
+
 	dataPath := os.Getenv("DATA_PATH")
 	if dataPath == "" {
-		dataPath = "/var/lib/dnt-vault/data"
+		dataPath = filepath.Join(homeDir, "dnt-vault", "data")
 	}
 
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
-		configPath = "/etc/dnt-vault"
+		configPath = filepath.Join(homeDir, "dnt-vault", "config")
 	}
 
 	if err := os.MkdirAll(dataPath, 0755); err != nil {
