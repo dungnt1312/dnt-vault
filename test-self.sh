@@ -64,7 +64,8 @@ export PORT=18443
 export DATA_PATH="$TEST_DIR/data"
 export CONFIG_PATH="$TEST_DIR/config"
 
-./server/bin/dnt-vault-server > "$TEST_DIR/server.log" 2>&1 &
+DNT_VAULT_BIN=$(command -v dnt-vault-server 2>/dev/null || echo "./server/bin/dnt-vault-server")
+"$DNT_VAULT_BIN" > "$TEST_DIR/server.log" 2>&1 &
 SERVER_PID=$!
 
 sleep 3
@@ -223,9 +224,22 @@ echo -e "\n${CYAN}━━━━━━━━━━━━━━━━━━━━�
 echo -e "${CYAN}Step 9: Test CLI Commands${NC}"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
-# Test CLI list command
-echo -e "${YELLOW}Testing: dnt-vault list${NC}"
-./cli/bin/dnt-vault list 2>&1 | head -5 || echo -e "${YELLOW}(Expected: requires login)${NC}"
+# Test CLI version command
+CLI_BIN=$(command -v dnt-vault 2>/dev/null || echo "./cli/bin/dnt-vault")
+echo -e "${YELLOW}Testing: dnt-vault version${NC}"
+"$CLI_BIN" version
+
+# Test CLI list command with test config
+echo -e "${YELLOW}Testing: dnt-vault list (with test config)${NC}"
+REAL_HOME=$HOME
+TEST_CFG="$REAL_HOME/.dnt-vault-test/config.yaml"
+TEST_TOKEN="$REAL_HOME/.dnt-vault-test/token"
+FAKE_HOME=$(mktemp -d)
+mkdir -p "$FAKE_HOME/.dnt-vault"
+cp "$TEST_CFG" "$FAKE_HOME/.dnt-vault/config.yaml"
+cp "$TEST_TOKEN" "$FAKE_HOME/.dnt-vault/token" 2>/dev/null || true
+HOME="$FAKE_HOME" "$CLI_BIN" list 2>&1 || echo -e "${YELLOW}(List returned above)${NC}"
+rm -rf "$FAKE_HOME"
 
 echo -e "\n${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${GREEN}✓ All Tests Passed!${NC}"

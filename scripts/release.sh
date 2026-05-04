@@ -5,9 +5,12 @@
 
 set -e
 
-VERSION=${1:-"1.0.0"}
+VERSION=${1:-"1.1.1"}
 REPO_ROOT=$(cd "$(dirname "$0")/.." && pwd)
 RELEASE_DIR="$REPO_ROOT/releases"
+BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+COMMIT_SHA="$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || echo "unknown")"
+LDFLAGS="-s -w -X 'main.Version=v${VERSION}' -X 'main.BuildTime=${BUILD_TIME}' -X 'main.CommitSHA=${COMMIT_SHA}'"
 
 # Colors
 GREEN='\033[0;32m'
@@ -50,7 +53,7 @@ for platform in "${PLATFORMS[@]}"; do
     fi
     
     echo -e "  Building $GOOS/$GOARCH..."
-    GOOS=$GOOS GOARCH=$GOARCH go build -ldflags="-s -w" -o "$RELEASE_DIR/$output_name" ./cmd/server
+    GOOS=$GOOS GOARCH=$GOARCH go build -ldflags="${LDFLAGS}" -o "$RELEASE_DIR/$output_name" ./cmd/server
     
     if [ $? -eq 0 ]; then
         echo -e "  ${GREEN}✓${NC} $output_name"
@@ -76,7 +79,7 @@ for platform in "${PLATFORMS[@]}"; do
     fi
     
     echo -e "  Building $GOOS/$GOARCH..."
-    GOOS=$GOOS GOARCH=$GOARCH go build -ldflags="-s -w" -o "$RELEASE_DIR/$output_name" ./cmd/cli
+    GOOS=$GOOS GOARCH=$GOARCH go build -ldflags="${LDFLAGS}" -o "$RELEASE_DIR/$output_name" ./cmd/cli
     
     if [ $? -eq 0 ]; then
         echo -e "  ${GREEN}✓${NC} $output_name"
