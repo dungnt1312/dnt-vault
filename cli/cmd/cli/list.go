@@ -13,9 +13,10 @@ import (
 )
 
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List all profiles in vault",
-	RunE:  runList,
+	Use:        "list",
+	Short:      "List all profiles in vault",
+	Deprecated: "Use 'dnt-vault profile list' instead",
+	RunE:       runList,
 }
 
 func init() {

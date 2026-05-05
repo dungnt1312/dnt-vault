@@ -2,6 +2,15 @@
 
 All notable changes to DNT-Vault will be documented in this file.
 
+## [1.1.3] - 2026-05-05
+
+### Added
+- `dnt-vault profile list` — list profiles with current profile marker
+- `dnt-vault profile use <name>` — pull and apply a profile, set as current
+
+### Changed
+- `dnt-vault list` deprecated (use `dnt-vault profile list`)
+
 ## [1.1.2] - 2026-05-05
 
 ### Added

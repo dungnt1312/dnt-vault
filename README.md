@@ -83,21 +83,16 @@ dnt-vault pull
 ## CLI Commands
 
 ```
-dnt-vault init                          # Initialize config + master password
-dnt-vault login                         # Login to vault server
-dnt-vault logout                        # Clear local token
-
-dnt-vault push                          # Push SSH config to vault
-dnt-vault push --include-keys           # Push config + private keys
-dnt-vault push --profile <name>         # Custom profile name
-
-dnt-vault pull                          # Interactive pull (select profile)
-dnt-vault pull --profile <name>         # Pull specific profile
-
-dnt-vault list                          # List all profiles
-dnt-vault delete --profile <name>       # Delete a profile
-
-dnt-vault version                       # Show version info
+dnt-vault init              # Initialize client
+dnt-vault login             # Login to vault
+dnt-vault push              # Push SSH config
+dnt-vault pull              # Pull SSH config
+dnt-vault profile list      # List all profiles
+dnt-vault profile use <name> # Pull and apply a profile
+dnt-vault list              # List profiles (deprecated)
+dnt-vault delete <name>     # Delete a profile
+dnt-vault upgrade           # Upgrade to latest version
+dnt-vault version           # Show version info
 ```
 
 ## Features
