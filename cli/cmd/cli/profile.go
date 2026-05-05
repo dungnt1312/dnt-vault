@@ -179,7 +179,7 @@ func runProfileUse(cmd *cobra.Command, args []string) error {
 
 	if profileData.Profile.HasKeys && len(profileData.Keys) > 0 {
 		fmt.Println(color.YellowString("\n⚠ This profile includes %d private keys.", len(profileData.Keys)))
-		decrypt, err := interactive.PromptConfirm("Decrypt and restore keys?", false)
+		decrypt, err := interactive.PromptConfirm("Decrypt and restore keys?", true)
 		if err != nil {
 			return err
 		}

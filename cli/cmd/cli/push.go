@@ -28,7 +28,7 @@ var pushCmd = &cobra.Command{
 }
 
 func init() {
-	pushCmd.Flags().BoolVar(&pushIncludeKeys, "include-keys", false, "Include private keys")
+	pushCmd.Flags().BoolVar(&pushIncludeKeys, "include-keys", true, "Include private keys")
 	pushCmd.Flags().StringVar(&pushProfileName, "profile", "", "Profile name (default: hostname)")
 	rootCmd.AddCommand(pushCmd)
 }
