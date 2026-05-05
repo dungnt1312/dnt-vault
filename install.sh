@@ -5,7 +5,6 @@
 
 set -e
 
-VERSION="1.1.2"
 REPO="dungnt1312/dnt-vault"
 INSTALL_DIR="/usr/local/bin"
 
@@ -55,6 +54,28 @@ check_sudo() {
     fi
 }
 
+# Fetch latest version from GitHub Releases API
+fetch_latest_version() {
+    local api_url="https://api.github.com/repos/$REPO/releases/latest"
+    local tag
+
+    if command -v curl &> /dev/null; then
+        tag=$(curl -fsSL "$api_url" | grep -o '"tag_name": "[^"]*"' | cut -d'"' -f4)
+    elif command -v wget &> /dev/null; then
+        tag=$(wget -qO- "$api_url" | grep -o '"tag_name": "[^"]*"' | cut -d'"' -f4)
+    else
+        echo -e "${RED}Error: curl or wget is required${NC}"
+        exit 1
+    fi
+
+    if [ -z "$tag" ]; then
+        echo -e "${RED}Error: failed to fetch latest version from GitHub${NC}"
+        exit 1
+    fi
+
+    echo "$tag"
+}
+
 # Download and install
 install() {
     detect_os
@@ -68,6 +89,12 @@ install() {
         echo -e "${RED}Unsupported OS or architecture${NC}"
         exit 1
     fi
+
+    # Fetch latest version from GitHub
+    echo -e "${CYAN}Fetching latest version...${NC}"
+    VERSION=$(fetch_latest_version | sed 's/^v//')
+    echo -e "${GREEN}Latest version: v$VERSION${NC}"
+    echo ""
 
     # Set install dir
     if [ "$OS" = "windows" ]; then

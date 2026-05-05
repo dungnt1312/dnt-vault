@@ -1,4 +1,4 @@
-# DNT-Vault v1.1.1
+# DNT-Vault v1.1.2
 
 ## Installation
 

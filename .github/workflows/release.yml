@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: linux
+            goarch: arm
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+          - goos: windows
+            goarch: amd64
+            ext: .exe
+          - goos: windows
+            goarch: "386"
+            ext: .exe
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Build CLI
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          cd cli
+          go build -ldflags "-s -w -X 'main.Version=${{ github.ref_name }}' -X 'main.BuildTime=${{ github.event.head_commit.timestamp }}' -X 'main.CommitSHA=${{ github.sha }}'" -o ../dnt-vault-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} ./cmd/cli
+
+      - name: Build Server
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          cd server
+          go build -ldflags "-s -w -X 'main.Version=${{ github.ref_name }}' -X 'main.BuildTime=${{ github.event.head_commit.timestamp }}' -X 'main.CommitSHA=${{ github.sha }}'" -o ../dnt-vault-server-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} ./cmd/server
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dnt-vault-*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
