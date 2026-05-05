@@ -2,6 +2,16 @@
 
 All notable changes to DNT-Vault will be documented in this file.
 
+## [1.1.6] - 2026-05-05
+
+### Fixed
+- Server storage now saves and loads verify field for master password validation
+- Hostname sanitization to remove control characters that caused invalid URLs
+
+### Changed
+- Push now defaults to including private keys (use `--include-keys=false` to disable)
+- Pull now defaults to restoring private keys (prompt defaults to yes)
+
 ## [1.1.3] - 2026-05-05
 
 ### Added
