@@ -5,7 +5,7 @@
 
 set -e
 
-VERSION="1.1.1"
+VERSION="1.1.2"
 REPO="dungnt1312/dnt-vault"
 INSTALL_DIR="/usr/local/bin"
 
