@@ -99,6 +99,13 @@ func runPull(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to read master key: %v", err)
 	}
 
+	if profileData.Verify != "" {
+		verified, err := crypto.Decrypt(profileData.Verify, string(masterPassword))
+		if err != nil || verified != "dnt-vault-ok" {
+			return fmt.Errorf("wrong master password — use the same password that was set when this profile was pushed")
+		}
+	}
+
 	fmt.Println(color.CyanString("Decrypting config..."))
 	decryptedConfig, err := crypto.Decrypt(profileData.Config, string(masterPassword))
 	if err != nil {

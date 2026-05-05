@@ -98,6 +98,11 @@ func runPush(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to encrypt config: %v", err)
 	}
 
+	verifyToken, err := crypto.Encrypt("dnt-vault-ok", string(masterPassword))
+	if err != nil {
+		return fmt.Errorf("failed to generate verify token: %v", err)
+	}
+
 	hash := sha256.Sum256([]byte(sshConfig.Raw))
 	configHash := hex.EncodeToString(hash[:])
 
@@ -110,6 +115,7 @@ func runPush(cmd *cobra.Command, args []string) error {
 			ConfigHash: configHash,
 		},
 		Config: encryptedConfig,
+		Verify: verifyToken,
 		Keys:   make(map[string]string),
 		KeysIV: make(map[string]string),
 	}

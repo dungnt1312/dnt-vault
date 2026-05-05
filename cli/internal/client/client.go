@@ -31,6 +31,7 @@ type Profile struct {
 type ProfileData struct {
 	Profile Profile           `json:"profile"`
 	Config  string            `json:"config"`
+	Verify  string            `json:"verify,omitempty"`
 	Keys    map[string]string `json:"keys,omitempty"`
 	KeysIV  map[string]string `json:"keys_iv,omitempty"`
 }
