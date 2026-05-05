@@ -109,6 +109,9 @@ func runPull(cmd *cobra.Command, args []string) error {
 	fmt.Println(color.CyanString("Decrypting config..."))
 	decryptedConfig, err := crypto.Decrypt(profileData.Config, string(masterPassword))
 	if err != nil {
+		if profileData.Verify == "" {
+			return fmt.Errorf("failed to decrypt config: %v\n\n⚠ This profile was pushed before v1.1.2 (no verify token).\n   Re-push from your client to fix this issue.", err)
+		}
 		return fmt.Errorf("failed to decrypt config: %v", err)
 	}
 
