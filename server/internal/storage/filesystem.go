@@ -56,6 +56,12 @@ func (fs *FilesystemStorage) SaveProfile(username string, data models.ProfileDat
 		return err
 	}
 
+	if data.Verify != "" {
+		if err := os.WriteFile(filepath.Join(tmpDir, "verify.enc"), []byte(data.Verify), 0644); err != nil {
+			return err
+		}
+	}
+
 	if len(data.Keys) > 0 {
 		keysPath := filepath.Join(tmpDir, "keys")
 		if err := os.MkdirAll(keysPath, 0755); err != nil {
@@ -112,9 +118,13 @@ func (fs *FilesystemStorage) GetProfile(username, name string) (*models.ProfileD
 		return nil, err
 	}
 
+	verifyPath := filepath.Join(profilePath, "verify.enc")
+	verifyData, _ := os.ReadFile(verifyPath) // ignore error if file doesn't exist
+
 	data := &models.ProfileData{
 		Profile: profile,
 		Config:  string(configData),
+		Verify:  string(verifyData),
 		Keys:    make(map[string]string),
 		KeysIV:  make(map[string]string),
 	}
