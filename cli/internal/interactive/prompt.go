@@ -60,5 +60,14 @@ func GetHostname() string {
 	if err != nil {
 		return "unknown"
 	}
-	return hostname
+	// Sanitize: remove control characters and replace with dash
+	sanitized := make([]rune, 0, len(hostname))
+	for _, r := range hostname {
+		if r < 32 || r > 126 || r == '/' || r == '\\' {
+			sanitized = append(sanitized, '-')
+		} else {
+			sanitized = append(sanitized, r)
+		}
+	}
+	return string(sanitized)
 }
