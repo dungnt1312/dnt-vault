@@ -2,6 +2,19 @@
 
 All notable changes to DNT-Vault will be documented in this file.
 
+## [1.1.2] - 2026-05-05
+
+### Added
+- `dnt-vault upgrade` — self-update CLI from GitHub Releases
+- Master password verification token on push, validated before pull
+- `install.sh` auto-detects latest version from GitHub API
+- Makefile with build, test, release targets
+- GitHub Actions CI/CD for automated cross-platform releases
+
+### Fixed
+- Pull now shows clear "wrong master password" error instead of cryptic cipher error
+- Windows Git Bash install now auto-adds to PATH and sources `.bashrc`
+
 ## [1.0.0] - 2026-05-04
 
 ### Added

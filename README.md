@@ -178,9 +178,32 @@ sudo systemctl enable --now dnt-vault
 Requirements: Go 1.22+
 
 ```bash
-./build.sh
-# server/bin/dnt-vault-server
-# cli/bin/dnt-vault
+make build
+# bin/dnt-vault
+# bin/dnt-vault-server
+```
+
+## Release Workflow
+
+**Tag & Push** → GitHub Actions auto-builds and releases binaries for all platforms.
+
+```bash
+# 1. Commit all changes
+git add -A && git commit -m "your changes"
+
+# 2. Tag new version (triggers CI/CD)
+git tag v1.1.3
+git push origin master && git push origin --tags
+
+# 3. GitHub Actions auto-uploads binaries to the release page
+#    No manual build or upload needed
+```
+
+**Manual build** (without CI/CD):
+
+```bash
+make release VERSION=1.1.3
+# Upload releases/* to GitHub manually
 ```
 
 ## API
