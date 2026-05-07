@@ -8,6 +8,7 @@
 # Binaries
 server/bin/
 cli/bin/
+bin/
 *.exe
 *.dll
 *.so
