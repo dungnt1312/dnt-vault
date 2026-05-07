@@ -13,8 +13,8 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 # Paths
-SERVER_BIN="./server/bin/dnt-vault-server"
-CLI_BIN="./cli/bin/dnt-vault"
+SERVER_BIN="./bin/dnt-vault-server"
+CLI_BIN="./bin/dnt-vault"
 TEST_DIR="/tmp/dnt-vault-test"
 SERVER_DATA="$TEST_DIR/server-data"
 SERVER_CONFIG="$TEST_DIR/server-config"
@@ -75,9 +75,14 @@ echo -e "${GREEN}✓ Server started (PID: $SERVER_PID)${NC}"
 # Test CLI
 echo -e "\n${YELLOW}Testing CLI commands...${NC}"
 
+export DNT_VAULT_SERVER_URL="http://localhost:18443"
+export DNT_VAULT_MASTER_PASSWORD="testpass"
+export DNT_VAULT_USERNAME="admin"
+export DNT_VAULT_PASSWORD="admin"
+
 # Test 1: Init
 echo -e "\n${YELLOW}Test 1: Initialize client${NC}"
-echo -e "http://localhost:18443\ntestpass\ntestpass" | $CLI_BIN init
+$CLI_BIN init
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✓ Init successful${NC}"
 else
@@ -87,7 +92,7 @@ fi
 
 # Test 2: Login
 echo -e "\n${YELLOW}Test 2: Login${NC}"
-echo -e "admin\nadmin" | $CLI_BIN login
+$CLI_BIN login
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✓ Login successful${NC}"
 else
@@ -97,7 +102,7 @@ fi
 
 # Test 3: Push without keys
 echo -e "\n${YELLOW}Test 3: Push config (without keys)${NC}"
-echo "test-profile" | $CLI_BIN push
+$CLI_BIN push --profile test-profile --include-keys=false
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✓ Push successful${NC}"
 else
@@ -118,7 +123,7 @@ fi
 # Test 5: Pull profile
 echo -e "\n${YELLOW}Test 5: Pull profile${NC}"
 mv "$CLIENT_HOME/.ssh/config" "$CLIENT_HOME/.ssh/config.backup"
-echo -e "1\nn" | $CLI_BIN pull
+echo "n" | $CLI_BIN pull --profile test-profile
 if [ $? -eq 0 ] && [ -f "$CLIENT_HOME/.ssh/config" ]; then
     echo -e "${GREEN}✓ Pull successful${NC}"
 else

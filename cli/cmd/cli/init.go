@@ -43,23 +43,31 @@ func runInit(cmd *cobra.Command, args []string) error {
 	fmt.Println(color.CyanString("Welcome to DNT-Vault SSH Config Sync!\n"))
 
 	fmt.Println(color.YellowString("Server Setup:"))
-	serverURL, err := interactive.PromptString("Server URL", "http://localhost:8443")
-	if err != nil {
-		return err
+	serverURL := os.Getenv("DNT_VAULT_SERVER_URL")
+	if serverURL == "" {
+		serverURL, err = interactive.PromptString("Server URL", "http://localhost:8443")
+		if err != nil {
+			return err
+		}
 	}
 
 	fmt.Println(color.GreenString("\n✓ Server configured: %s\n", serverURL))
 
 	fmt.Println(color.YellowString("Master Password Setup:"))
 	fmt.Println("This password encrypts your SSH configs.")
-	masterPassword, err := interactive.PromptPassword("Enter master password")
-	if err != nil {
-		return err
-	}
-
-	confirmPassword, err := interactive.PromptPassword("Confirm password")
-	if err != nil {
-		return err
+	masterPassword := os.Getenv("DNT_VAULT_MASTER_PASSWORD")
+	confirmPassword := os.Getenv("DNT_VAULT_MASTER_PASSWORD_CONFIRM")
+	if masterPassword == "" {
+		masterPassword, err = interactive.PromptPassword("Enter master password")
+		if err != nil {
+			return err
+		}
+		confirmPassword, err = interactive.PromptPassword("Confirm password")
+		if err != nil {
+			return err
+		}
+	} else if confirmPassword == "" {
+		confirmPassword = masterPassword
 	}
 
 	if masterPassword != confirmPassword {
@@ -70,8 +78,8 @@ func runInit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	masterKeyFile := filepath.Join(configDir, "master.key")
-	if err := os.WriteFile(masterKeyFile, []byte(masterPassword), 0600); err != nil {
+	sshMasterKeyFile := filepath.Join(configDir, "ssh-master.key")
+	if err := os.WriteFile(sshMasterKeyFile, []byte(masterPassword), 0600); err != nil {
 		return err
 	}
 
@@ -82,15 +90,17 @@ func runInit(cmd *cobra.Command, args []string) error {
 	cfg.SSH.KeysDir = filepath.Join(homeDir, ".ssh")
 	cfg.Profiles.DefaultNameFormat = "{hostname}"
 	cfg.Backup.Enabled = true
-	cfg.Backup.Dir = filepath.Join(configDir, "backups")
+	cfg.Backup.Dir = filepath.Join(configDir, "backups", "ssh")
 	cfg.Backup.MaxBackups = 10
-	cfg.Encryption.MasterKeyFile = masterKeyFile
+	cfg.Encryption.SSHMasterKeyFile = sshMasterKeyFile
+	cfg.Encryption.EnvMasterKeyFile = filepath.Join(configDir, "env-master.key")
+	cfg.Env.BackupDir = filepath.Join(configDir, "backups", "env")
 
 	if err := config.SaveAppConfig(&cfg); err != nil {
 		return err
 	}
 
-	fmt.Println(color.GreenString("\n✓ Master key generated and saved to %s", masterKeyFile))
+	fmt.Println(color.GreenString("\n✓ SSH master key generated and saved to %s", sshMasterKeyFile))
 	fmt.Println(color.GreenString("✓ Configuration saved to %s", filepath.Join(configDir, "config.yaml")))
 	fmt.Println(color.CyanString("\nRun 'dnt-vault login' to authenticate with the vault."))
 

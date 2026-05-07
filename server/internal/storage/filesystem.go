@@ -32,6 +32,14 @@ func (fs *FilesystemStorage) getProfilePath(username, profileName string) string
 	return filepath.Join(fs.getUserPath(username), profileName)
 }
 
+func (fs *FilesystemStorage) getEnvRootPath(username string) string {
+	return filepath.Join(fs.getUserPath(username), "env")
+}
+
+func (fs *FilesystemStorage) getEnvScopePath(username, scope string) string {
+	return filepath.Join(fs.getEnvRootPath(username), scope)
+}
+
 func (fs *FilesystemStorage) SaveProfile(username string, data models.ProfileData) error {
 	userPath := fs.getUserPath(username)
 	if err := os.MkdirAll(userPath, 0755); err != nil {
@@ -214,5 +222,130 @@ func (fs *FilesystemStorage) DeleteProfile(username, name string) error {
 func (fs *FilesystemStorage) ProfileExists(username, name string) bool {
 	profilePath := fs.getProfilePath(username, name)
 	_, err := os.Stat(profilePath)
+	return err == nil
+}
+
+func (fs *FilesystemStorage) SaveEnvScope(username, scope string, data models.EnvScopeData) error {
+	userPath := fs.getUserPath(username)
+	if err := os.MkdirAll(userPath, 0o755); err != nil {
+		return err
+	}
+
+	tmpDir, err := os.MkdirTemp(userPath, ".tmp-env-*")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tmpDir)
+
+	metadataData, err := json.MarshalIndent(data.Metadata, "", "  ")
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(tmpDir, "metadata.json"), metadataData, 0o644); err != nil {
+		return err
+	}
+
+	variablesData, err := json.Marshal(data.Variables)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(tmpDir, "variables.enc"), variablesData, 0o644); err != nil {
+		return err
+	}
+
+	if data.Verify != "" {
+		if err := os.WriteFile(filepath.Join(tmpDir, "verify.enc"), []byte(data.Verify), 0o644); err != nil {
+			return err
+		}
+	}
+
+	envRoot := fs.getEnvRootPath(username)
+	if err := os.MkdirAll(envRoot, 0o755); err != nil {
+		return err
+	}
+
+	scopePath := fs.getEnvScopePath(username, scope)
+	if _, err := os.Stat(scopePath); err == nil {
+		if err := os.RemoveAll(scopePath); err != nil {
+			return err
+		}
+	}
+
+	return os.Rename(tmpDir, scopePath)
+}
+
+func (fs *FilesystemStorage) GetEnvScope(username, scope string) (*models.EnvScopeData, error) {
+	scopePath := fs.getEnvScopePath(username, scope)
+	if _, err := os.Stat(scopePath); os.IsNotExist(err) {
+		return nil, errors.New("scope not found")
+	}
+
+	metadataData, err := os.ReadFile(filepath.Join(scopePath, "metadata.json"))
+	if err != nil {
+		return nil, err
+	}
+	var metadata models.EnvScope
+	if err := json.Unmarshal(metadataData, &metadata); err != nil {
+		return nil, err
+	}
+
+	variablesData, err := os.ReadFile(filepath.Join(scopePath, "variables.enc"))
+	if err != nil {
+		return nil, err
+	}
+	vars := make(map[string]string)
+	if len(variablesData) > 0 {
+		if err := json.Unmarshal(variablesData, &vars); err != nil {
+			return nil, err
+		}
+	}
+
+	verifyData, _ := os.ReadFile(filepath.Join(scopePath, "verify.enc"))
+
+	return &models.EnvScopeData{Metadata: metadata, Variables: vars, Verify: string(verifyData)}, nil
+}
+
+func (fs *FilesystemStorage) ListEnvScopes(username string) ([]models.EnvScope, error) {
+	envRoot := fs.getEnvRootPath(username)
+	if _, err := os.Stat(envRoot); os.IsNotExist(err) {
+		return []models.EnvScope{}, nil
+	}
+
+	entries, err := os.ReadDir(envRoot)
+	if err != nil {
+		return nil, err
+	}
+
+	scopes := make([]models.EnvScope, 0, len(entries))
+	for _, entry := range entries {
+		if !entry.IsDir() || strings.HasPrefix(entry.Name(), ".tmp-") {
+			continue
+		}
+		metadataPath := filepath.Join(envRoot, entry.Name(), "metadata.json")
+		metadataData, err := os.ReadFile(metadataPath)
+		if err != nil {
+			continue
+		}
+		var scope models.EnvScope
+		if err := json.Unmarshal(metadataData, &scope); err != nil {
+			continue
+		}
+		scopes = append(scopes, scope)
+	}
+
+	return scopes, nil
+}
+
+func (fs *FilesystemStorage) DeleteEnvScope(username, scope string) error {
+	scopePath := fs.getEnvScopePath(username, scope)
+	if _, err := os.Stat(scopePath); os.IsNotExist(err) {
+		return errors.New("scope not found")
+	}
+	return os.RemoveAll(scopePath)
+}
+
+func (fs *FilesystemStorage) EnvScopeExists(username, scope string) bool {
+	scopePath := fs.getEnvScopePath(username, scope)
+	_, err := os.Stat(scopePath)
 	return err == nil
 }

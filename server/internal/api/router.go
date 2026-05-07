@@ -25,5 +25,13 @@ func NewRouter(handler *Handler, middleware *Middleware) *mux.Router {
 	protected.HandleFunc("/profiles/{name}", handler.SaveProfile).Methods("POST")
 	protected.HandleFunc("/profiles/{name}", handler.DeleteProfile).Methods("DELETE")
 
+	protected.HandleFunc("/env/scopes", handler.ListEnvScopes).Methods("GET")
+	protected.HandleFunc("/env/scopes/{scope}", handler.GetEnvScope).Methods("GET")
+	protected.HandleFunc("/env/scopes/{scope}", handler.SaveEnvScope).Methods("POST")
+	protected.HandleFunc("/env/scopes/{scope}", handler.DeleteEnvScope).Methods("DELETE")
+	protected.HandleFunc("/env/scopes/{scope}/{key}", handler.GetEnvVariable).Methods("GET")
+	protected.HandleFunc("/env/scopes/{scope}/{key}", handler.SetEnvVariable).Methods("PUT")
+	protected.HandleFunc("/env/scopes/{scope}/{key}", handler.DeleteEnvVariable).Methods("DELETE")
+
 	return r
 }

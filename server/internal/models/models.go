@@ -34,6 +34,23 @@ type ProfileListResponse struct {
 	Profiles []Profile `json:"profiles"`
 }
 
+type EnvScope struct {
+	Name          string    `json:"name"`
+	VariableCount int       `json:"variable_count"`
+	UpdatedAt     time.Time `json:"updated_at"`
+	Hostname      string    `json:"hostname"`
+}
+
+type EnvScopeData struct {
+	Metadata  EnvScope          `json:"metadata"`
+	Variables map[string]string `json:"variables"`
+	Verify    string            `json:"verify,omitempty"`
+}
+
+type EnvScopeListResponse struct {
+	Scopes []EnvScope `json:"scopes"`
+}
+
 type ErrorResponse struct {
 	Error string `json:"error"`
 }

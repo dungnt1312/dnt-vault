@@ -94,7 +94,7 @@ func runPull(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to download profile: %v", err)
 	}
 
-	masterPassword, err := os.ReadFile(cfg.Encryption.MasterKeyFile)
+	masterPassword, err := os.ReadFile(cfg.SSHMasterKeyPath())
 	if err != nil {
 		return fmt.Errorf("failed to read master key: %v", err)
 	}

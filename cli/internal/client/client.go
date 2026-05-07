@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -48,6 +49,23 @@ type LoginResponse struct {
 
 type ProfileListResponse struct {
 	Profiles []Profile `json:"profiles"`
+}
+
+type EnvScope struct {
+	Name          string    `json:"name"`
+	VariableCount int       `json:"variable_count"`
+	UpdatedAt     time.Time `json:"updated_at"`
+	Hostname      string    `json:"hostname"`
+}
+
+type EnvScopeData struct {
+	Metadata  EnvScope          `json:"metadata"`
+	Variables map[string]string `json:"variables"`
+	Verify    string            `json:"verify,omitempty"`
+}
+
+type EnvScopeListResponse struct {
+	Scopes []EnvScope `json:"scopes"`
 }
 
 func NewClient(baseURL, tokenFile string) *Client {
@@ -212,4 +230,191 @@ func (c *Client) DeleteProfile(name string) error {
 	}
 
 	return nil
+}
+
+func (c *Client) ListEnvScopes() ([]EnvScope, error) {
+	req, err := http.NewRequest("GET", c.baseURL+"/api/v1/env/scopes", nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+c.token)
+
+	resp, err := c.doWithRetry(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to list env scopes: %s", resp.Status)
+	}
+
+	var out EnvScopeListResponse
+	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		return nil, err
+	}
+
+	return out.Scopes, nil
+}
+
+func (c *Client) GetEnvScope(scope string) (*EnvScopeData, error) {
+	req, err := http.NewRequest("GET", c.baseURL+"/api/v1/env/scopes/"+scope, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+c.token)
+
+	resp, err := c.doWithRetry(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to get env scope: %s", resp.Status)
+	}
+
+	var out EnvScopeData
+	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *Client) SaveEnvScope(scope string, data EnvScopeData) error {
+	body, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest("POST", c.baseURL+"/api/v1/env/scopes/"+scope, bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", "Bearer "+c.token)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.doWithRetry(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("failed to save env scope: %s - %s", resp.Status, string(bodyBytes))
+	}
+
+	return nil
+}
+
+func (c *Client) DeleteEnvScope(scope string) error {
+	req, err := http.NewRequest("DELETE", c.baseURL+"/api/v1/env/scopes/"+scope, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", "Bearer "+c.token)
+
+	resp, err := c.doWithRetry(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("failed to delete env scope: %s", resp.Status)
+	}
+	return nil
+}
+
+func (c *Client) GetEnvVariable(scope, key string) (string, error) {
+	req, err := http.NewRequest("GET", c.baseURL+"/api/v1/env/scopes/"+scope+"/"+key, nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Authorization", "Bearer "+c.token)
+
+	resp, err := c.doWithRetry(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to get env variable: %s", resp.Status)
+	}
+	var out struct {
+		Value string `json:"value"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		return "", err
+	}
+	return out.Value, nil
+}
+
+func (c *Client) SetEnvVariable(scope, key, value, hostname, verify string) error {
+	body, err := json.Marshal(map[string]string{"value": value, "hostname": hostname, "verify": verify})
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest("PUT", c.baseURL+"/api/v1/env/scopes/"+scope+"/"+key, bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", "Bearer "+c.token)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.doWithRetry(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to set env variable: %s", resp.Status)
+	}
+	return nil
+}
+
+func (c *Client) DeleteEnvVariable(scope, key string) error {
+	req, err := http.NewRequest("DELETE", c.baseURL+"/api/v1/env/scopes/"+scope+"/"+key, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", "Bearer "+c.token)
+
+	resp, err := c.doWithRetry(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to delete env variable: %s", resp.Status)
+	}
+	return nil
+}
+
+func (c *Client) doWithRetry(req *http.Request) (*http.Response, error) {
+	var lastErr error
+	for i := 0; i < 3; i++ {
+		clone := req.Clone(req.Context())
+		resp, err := c.httpClient.Do(clone)
+		if err == nil {
+			if resp.StatusCode >= 500 {
+				lastErr = fmt.Errorf("server error: %s", resp.Status)
+				resp.Body.Close()
+				time.Sleep(time.Duration(100*(1<<i)) * time.Millisecond)
+				continue
+			}
+			return resp, nil
+		}
+		if ne, ok := err.(net.Error); ok && ne.Timeout() {
+			lastErr = err
+			time.Sleep(time.Duration(100*(1<<i)) * time.Millisecond)
+			continue
+		}
+		lastErr = err
+		time.Sleep(time.Duration(100*(1<<i)) * time.Millisecond)
+	}
+	return nil, lastErr
 }

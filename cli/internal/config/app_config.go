@@ -26,8 +26,13 @@ type AppConfig struct {
 		MaxBackups int    `yaml:"max_backups"`
 	} `yaml:"backup"`
 	Encryption struct {
-		MasterKeyFile string `yaml:"master_key_file"`
+		SSHMasterKeyFile string `yaml:"ssh_master_key_file"`
+		EnvMasterKeyFile string `yaml:"env_master_key_file"`
+		MasterKeyFile    string `yaml:"master_key_file,omitempty"`
 	} `yaml:"encryption"`
+	Env struct {
+		BackupDir string `yaml:"backup_dir"`
+	} `yaml:"env"`
 }
 
 func LoadAppConfig() (*AppConfig, error) {
@@ -47,7 +52,40 @@ func LoadAppConfig() (*AppConfig, error) {
 		return nil, err
 	}
 
+	cfg.NormalizePaths(homeDir)
+
 	return &cfg, nil
+}
+
+func (cfg *AppConfig) NormalizePaths(homeDir string) {
+	configDir := filepath.Join(homeDir, ".dnt-vault")
+
+	if cfg.Encryption.SSHMasterKeyFile == "" && cfg.Encryption.MasterKeyFile != "" {
+		cfg.Encryption.SSHMasterKeyFile = cfg.Encryption.MasterKeyFile
+	}
+
+	if cfg.Encryption.SSHMasterKeyFile == "" {
+		cfg.Encryption.SSHMasterKeyFile = filepath.Join(configDir, "ssh-master.key")
+	}
+
+	if cfg.Encryption.EnvMasterKeyFile == "" {
+		cfg.Encryption.EnvMasterKeyFile = filepath.Join(configDir, "env-master.key")
+	}
+
+	if cfg.Backup.Dir == "" {
+		cfg.Backup.Dir = filepath.Join(configDir, "backups", "ssh")
+	}
+
+	if cfg.Env.BackupDir == "" {
+		cfg.Env.BackupDir = filepath.Join(configDir, "backups", "env")
+	}
+}
+
+func (cfg *AppConfig) SSHMasterKeyPath() string {
+	if cfg.Encryption.SSHMasterKeyFile != "" {
+		return cfg.Encryption.SSHMasterKeyFile
+	}
+	return cfg.Encryption.MasterKeyFile
 }
 
 func SaveAppConfig(cfg *AppConfig) error {

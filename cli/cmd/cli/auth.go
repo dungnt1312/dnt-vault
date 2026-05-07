@@ -42,14 +42,19 @@ func runLogin(cmd *cobra.Command, args []string) error {
 
 	fmt.Println(color.CyanString("Vault Server: %s", cfg.Server.URL))
 
-	username, err := interactive.PromptString("Username", "admin")
-	if err != nil {
-		return err
+	username := os.Getenv("DNT_VAULT_USERNAME")
+	password := os.Getenv("DNT_VAULT_PASSWORD")
+	if username == "" {
+		username, err = interactive.PromptString("Username", "admin")
+		if err != nil {
+			return err
+		}
 	}
-
-	password, err := interactive.PromptPassword("Password")
-	if err != nil {
-		return err
+	if password == "" {
+		password, err = interactive.PromptPassword("Password")
+		if err != nil {
+			return err
+		}
 	}
 
 	if err := c.Login(username, password); err != nil {
@@ -77,4 +82,3 @@ func runLogout(cmd *cobra.Command, args []string) error {
 	fmt.Println(color.GreenString("✓ Logged out successfully"))
 	return nil
 }
-

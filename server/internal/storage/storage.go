@@ -8,4 +8,10 @@ type Storage interface {
 	ListProfiles(username string) ([]models.Profile, error)
 	DeleteProfile(username, name string) error
 	ProfileExists(username, name string) bool
+
+	SaveEnvScope(username, scope string, data models.EnvScopeData) error
+	GetEnvScope(username, scope string) (*models.EnvScopeData, error)
+	ListEnvScopes(username string) ([]models.EnvScope, error)
+	DeleteEnvScope(username, scope string) error
+	EnvScopeExists(username, scope string) bool
 }

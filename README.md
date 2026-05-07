@@ -1,6 +1,6 @@
 # dnt-vault
 
-Self-hosted SSH config and key synchronization tool written in Go. Sync your `~/.ssh/config` and private keys across machines through your own vault server — encrypted client-side, no third-party services.
+Self-hosted SSH config, key, and environment variable synchronization tool written in Go. Sync your `~/.ssh/config`, private keys, and app secrets across machines through your own vault server — encrypted client-side, no third-party services.
 
 ## Install
 
@@ -54,6 +54,8 @@ dnt-vault init
 
 Enter your server URL and set a master password. Config saved to `~/.dnt-vault/config.yaml`.
 
+This creates `~/.dnt-vault/ssh-master.key` for SSH encryption. Environment variables use a separate key initialized via `dnt-vault env init`.
+
 ### 3. Login
 
 ```
@@ -95,6 +97,43 @@ dnt-vault upgrade           # Upgrade to latest version
 dnt-vault version           # Show version info
 ```
 
+## Environment Variables Sync
+
+Initialize env encryption:
+
+```bash
+dnt-vault env init
+```
+
+Push variables:
+
+```bash
+dnt-vault env push myapp/production --file .env.production
+```
+
+Pull into current shell:
+
+```bash
+eval $(dnt-vault env pull myapp/production)
+```
+
+Pull to file:
+
+```bash
+dnt-vault env pull myapp/production --output .env
+```
+
+Manage scopes/variables:
+
+```bash
+dnt-vault env list
+dnt-vault env list myapp/production
+dnt-vault env get myapp/production API_KEY
+dnt-vault env set myapp/production API_KEY new-value
+dnt-vault env delete myapp/production API_KEY
+dnt-vault env delete myapp/production --all
+```
+
 ## Features
 
 - Client-side encryption: AES-256-GCM with PBKDF2 key derivation — server never sees plaintext.
@@ -119,11 +158,16 @@ ssh:
   keys_dir: ~/.ssh
 backup:
   enabled: true
-  dir: ~/.dnt-vault/backups
+  dir: ~/.dnt-vault/backups/ssh
   max_backups: 10
+env:
+  backup_dir: ~/.dnt-vault/backups/env
 encryption:
-  master_key_file: ~/.dnt-vault/master.key
+  ssh_master_key_file: ~/.dnt-vault/ssh-master.key
+  env_master_key_file: ~/.dnt-vault/env-master.key
 ```
+
+Migration note: legacy `encryption.master_key_file` is still supported and treated as SSH key path.
 
 Server environment variables:
 
@@ -209,6 +253,14 @@ GET    /api/v1/profiles             # List profiles        [auth]
 GET    /api/v1/profiles/:name       # Get profile data     [auth]
 POST   /api/v1/profiles/:name       # Save profile         [auth]
 DELETE /api/v1/profiles/:name       # Delete profile       [auth]
+
+GET    /api/v1/env/scopes                  # List env scopes        [auth]
+GET    /api/v1/env/scopes/:scope           # Get env scope          [auth]
+POST   /api/v1/env/scopes/:scope           # Save env scope         [auth]
+DELETE /api/v1/env/scopes/:scope           # Delete env scope       [auth]
+GET    /api/v1/env/scopes/:scope/:key      # Get env variable       [auth]
+PUT    /api/v1/env/scopes/:scope/:key      # Set env variable       [auth]
+DELETE /api/v1/env/scopes/:scope/:key      # Delete env variable    [auth]
 ```
 
 ## Troubleshooting
